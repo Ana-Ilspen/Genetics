@@ -13,38 +13,38 @@ const App = () => {
   useEffect(() => {
     const prefixes = ["Neon", "Primal", "Void", "Solar", "Cryo", "Toxic", "Apex", "Shadow", "Alpha", "Nano"];
     const animals = {
-      Mammalian: ["Wolf", "Tiger", "Bear", "Elephant", "Rhino", "Bat", "Panther", "Ape", "Bison", "Hyena"],
-      Avian: ["Falcon", "Owl", "Eagle", "Raven", "Vulture", "Phoenix", "Hawk", "Swift", "Heron", "Condor"],
-      Botanical: ["Lotus", "Oak", "Fern", "Ivy", "Cactus", "Brier", "Willow", "Redwood", "Moss", "Orchid"],
-      Aquatic: ["Orca", "Shark", "Axolotl", "Kraken", "Manta", "Eel", "Hydra", "Dolphin", "Ray", "Urchin"],
-      Human: ["Sapiens", "Cybernetic", "Neural", "Augmented", "Prime", "Ancient", "Nomad", "Oracle", "Elite", "Origin"]
+      Mammalian: ["Wolf", "Tiger", "Bear", "Elephant", "Rhino"],
+      Avian: ["Falcon", "Owl", "Eagle", "Raven", "Vulture"],
+      Botanical: ["Lotus", "Oak", "Fern", "Ivy", "Cactus"],
+      Aquatic: ["Orca", "Shark", "Axolotl", "Kraken", "Manta"],
+      Human: ["Sapiens", "Cybernetic", "Neural", "Augmented", "Oracle"],
+      // NEW KINGDOM: Arachnid
+      Arachnid: ["Black Widow", "Tarantula", "Orb Weaver", "Scorpion", "Jumping Spider", "Trapdoor Spider", "Recluse", "Wolf Spider", "Funnel Web", "Huntsman"]
     };
 
-    const baseGenes = Array.from({ length: 500 }, (_, i) => {
+    const baseGenes = Array.from({ length: 600 }, (_, i) => {
       const keys = Object.keys(animals);
-      const type = keys[i % 5];
+      const type = keys[i % 6];
       const animalList = animals[type];
-      const animal = animalList[Math.floor((i / 5) % animalList.length)];
-      const prefix = prefixes[Math.floor((i / 50) % prefixes.length)];
+      const animal = animalList[Math.floor((i / 6) % animalList.length)];
+      const prefix = prefixes[Math.floor((i / 60) % prefixes.length)];
       
-      // NEW: Dynamic Trait Mapping for Humans & Others
       const traitLibrary = {
         Mammalian: { feat: "Dense Muscular Fibers", trait: "Adrenaline Response", comp: "Mammal-Beta", ph: 7.2, tox: 12 },
         Avian: { feat: "Hollow Bone Architecture", trait: "Enhanced Optics", comp: "Avian-C", ph: 7.5, tox: 8 },
         Botanical: { feat: "Chlorophyll Dermal Layer", trait: "Cellular Regen", comp: "Phyto-K", ph: 5.2, tox: 15 },
         Aquatic: { feat: "Gilled Filtration", trait: "Pressure Resistance", comp: "Aqua-Lipid", ph: 8.1, tox: 10 },
+        // Expanded Arachnid Library
+        Arachnid: { feat: "Chitinous Exoskeleton", trait: "Tensile Silk Production", comp: "Venom-X", ph: 6.8, tox: 55 },
         // Human Sub-Types
         Human_Sapiens: { feat: "Advanced Frontal Lobe", trait: "Fine Motor Control", comp: "Cerebro-V", ph: 7.4, tox: 35 },
         Human_Cybernetic: { feat: "Sub-Dermal Neural Mesh", trait: "Digital Interfacing", comp: "Nano-Logic", ph: 7.0, tox: 45 },
-        Human_Oracle: { feat: "Pre-Cognitive Synapse", trait: "Hyper-Focus State", comp: "Psionic-X", ph: 7.6, tox: 50 },
-        Human_Ancient: { feat: "Ancestral Bone Density", trait: "Endurance Hardening", comp: "Origin-G", ph: 7.3, tox: 30 },
-        Human_Augmented: { feat: "Ocular HUD Integration", trait: "Tactical Processing", comp: "Optic-N", ph: 7.1, tox: 42 }
+        Human_Oracle: { feat: "Pre-Cognitive Synapse", trait: "Hyper-Focus State", comp: "Psionic-X", ph: 7.6, tox: 50 }
       };
 
-      // Determine which human trait to use
       let traitKey = type;
       if (type === "Human") {
-        const humanType = animal; // Uses "Sapiens", "Cybernetic", etc.
+        const humanType = animal;
         traitKey = traitLibrary[`Human_${humanType}`] ? `Human_${humanType}` : "Human_Sapiens";
       }
 
@@ -56,8 +56,8 @@ const App = () => {
         type,
         trait: activeTrait.trait,
         feature: activeTrait.feat,
-        icon: { Mammalian: "🐺", Avian: "🦅", Botanical: "🌿", Aquatic: "🦈", Human: "👤" }[type],
-        color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF" }[type],
+        icon: { Mammalian: "🐺", Avian: "🦅", Botanical: "🌿", Aquatic: "🦈", Human: "👤", Arachnid: "🕷️" }[type],
+        color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF", Arachnid: "#E066FF" }[type],
         compound: activeTrait.comp,
         basePh: activeTrait.ph,
         baseTox: activeTrait.tox,
@@ -70,28 +70,35 @@ const App = () => {
   const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
     const combo = [g1.type, g2.type].sort().join('+');
-    const isLethal = (combo.includes("Botanical") && !combo.includes("Botanical+Botanical")) || (combo.includes("Human") && combo.includes("Botanical"));
-    const failReason = (combo.includes("Human") && combo.includes("Botanical")) 
-        ? "Cytotoxic Shock: Human neural tissue rejected botanical alkaloids." 
-        : "Molecular Incompatibility: Plant cellulose cannot fuse with animal proteins.";
+    
+    // Updated Lethal Logic
+    const isLethal = (combo.includes("Botanical") && !combo.includes("Botanical") && !combo.includes("Arachnid")) || 
+                     (combo.includes("Human") && combo.includes("Botanical")) ||
+                     (combo.includes("Arachnid") && combo.includes("Avian")); // New: Birds vs Spiders
+
+    const failReason = combo.includes("Arachnid+Avian") 
+        ? "Enzymatic Conflict: Avian stomach acids dissolve arachnid silk-glands instantly." 
+        : combo.includes("Human+Botanical") 
+        ? "Cytotoxic Shock: Human neural tissue rejected botanical alkaloids."
+        : "Molecular Incompatibility: Structure failed to stabilize.";
 
     const avgPh = ((g1.basePh + g2.basePh) / 2).toFixed(1);
     let finalTox = (g1.baseTox + g2.baseTox);
-    if (g1.type !== g2.type) finalTox += 20;
+    if (g1.type !== g2.type) finalTox += 25;
 
     return {
       isLethal, canSave: !isLethal,
       color: isLethal ? "#FF6666" : (view === 'splicer' ? "#99EBFF" : "#EBBBFF"),
       splicerReport: {
-        physical: `Primary Structure: ${g1.feature} (Source: ${g1.name})`,
-        secondary: `Secondary Trait: ${g2.trait} (Source: ${g2.name})`,
-        alignment: isLethal ? `CRITICAL FAILURE: ${failReason}` : "SUCCESS: Recombination complete."
+        physical: `Primary: ${g1.feature} (${g1.name})`,
+        secondary: `Secondary: ${g2.trait} (${g2.name})`,
+        alignment: isLethal ? `CRITICAL FAILURE: ${failReason}` : "SUCCESS: Genetic stability achieved."
       },
       serumData: { ph: avgPh, tox: `${finalTox}%`, failReason, steps: [
-        `1. Distill ${g1.compound} isolate from ${g1.name}`,
-        `2. Infuse ${g2.compound} agent from ${g2.name}`,
-        `3. Stabilize with Saline Buffer`,
-        `4. Apply Catalyst for molecular bonding`
+        `1. Centrifuge ${g1.compound} from ${g1.name}`,
+        `2. Titrate ${g2.compound} from ${g2.name}`,
+        `3. Apply pH Stabilizer`,
+        `4. Finalize molecular bond`
       ]}
     };
   };
@@ -99,21 +106,21 @@ const App = () => {
   const res = getAnalysis(slotA, slotB);
   const clear = () => { setSlotA(null); setSlotB(null); setHybridName(""); };
 
-  const downloadReport = (item) => {
-    let content = `LAB REPORT: ${item.name}\n--------------------------\n`;
-    content += item.mode === 'splicer' ? `PHYSICAL: ${item.reportData.splicerReport.physical}` : `STEPS: ${item.reportData.serumData.steps.join(', ')}`;
-    const element = document.createElement("a");
-    element.href = URL.createObjectURL(new Blob([content], {type: 'text/plain'}));
-    element.download = `${item.name}_Profile.txt`;
-    element.click();
-  };
-
   const archiveResult = () => {
     if (!hybridName) return alert("ENTER NAME");
     const newEntry = { ...slotA, id: `HYB-${Math.floor(Math.random() * 9000)}`, name: hybridName.toUpperCase(), isHybrid: true, color: res.color, reportData: res, mode: view };
     setInventory([newEntry, ...inventory]);
-    setSearchTerm(""); // Clears search on save
+    setSearchTerm(""); 
     clear();
+  };
+
+  const downloadReport = (item) => {
+    let content = `LAB REPORT: ${item.name}\n--------------------------\n`;
+    content += item.mode === 'splicer' ? `PHYSICAL: ${item.reportData.splicerReport.physical}` : `pH: ${item.reportData.serumData.ph} | TOX: ${item.reportData.serumData.tox}`;
+    const element = document.createElement("a");
+    element.href = URL.createObjectURL(new Blob([content], {type: 'text/plain'}));
+    element.download = `${item.name}_Profile.txt`;
+    element.click();
   };
 
   return (
@@ -136,7 +143,7 @@ const App = () => {
                   style={{ width: '100%', padding: '14px', background: view === 'serum' ? '#EBBBFF' : '#99EBFF', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '10px' }}>
             {view === 'splicer' ? '🧪 GO TO SERUM LAB' : '🧬 GO TO SPLICER'}
           </button>
-          <input type="text" placeholder="SEARCH SAMPLES OR TYPES..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
+          <input type="text" placeholder="SEARCH SAMPLES (Try 'Arachnid')..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
                  style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #333', color: '#FFF' }} />
         </div>
 
@@ -165,8 +172,8 @@ const App = () => {
         <div style={{ display: 'flex', gap: '40px', marginBottom: '30px' }}>
           {[slotA, slotB].map((slot, i) => (
             <div key={i} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { const d = JSON.parse(e.dataTransfer.getData("gene")); i === 0 ? setSlotA(d) : setSlotB(d); }}
-              style={{ width: '180px', height: '240px', border: '2px dashed #444', background: '#050505', textAlign: 'center', padding: '20px', borderRadius: '15px' }}>
-              {slot ? <> <div style={{ fontSize: '50px' }}>{slot.icon}</div> <b style={{color: slot.color}}>{slot.name}</b> </> : <p style={{color: '#444', marginTop: '40%'}}>DRAG SAMPLE</p>}
+              style={{ width: '180px', height: '240px', border: '2px dashed #444', background: '#050505', textAlign: 'center', padding: '20px', borderRadius: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              {slot ? <> <div style={{ fontSize: '50px' }}>{slot.icon}</div> <b style={{color: slot.color}}>{slot.name}</b> </> : <p style={{color: '#444'}}>DRAG SAMPLE</p>}
             </div>
           ))}
         </div>
@@ -178,32 +185,31 @@ const App = () => {
               <button onClick={clear} style={{ background: '#333', color: '#FFF', border: 'none', padding: '8px 20px', cursor: 'pointer', borderRadius: '5px' }}>RESET LAB</button>
             </div>
             
-            {view === 'splicer' ? (
-              <div style={{ fontSize: '18px' }}>
-                <p>🧬 {res.splicerReport.physical}</p>
-                <p>🧬 {res.splicerReport.secondary}</p>
-                <p style={{ color: res.color, fontWeight: 'bold' }}>{res.splicerReport.alignment}</p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
-                <div>
+            <div style={{ fontSize: '18px' }}>
+              {view === 'splicer' ? (
+                <>
+                  <p>🧬 {res.splicerReport.physical}</p>
+                  <p>🧬 {res.splicerReport.secondary}</p>
+                </>
+              ) : (
+                <>
                   {res.isLethal ? (
-                     <p style={{ color: '#FF6666', fontSize: '18px' }}>{res.serumData.failReason}</p>
+                     <p style={{ color: '#FF6666' }}>{res.serumData.failReason}</p>
                   ) : (
-                    <>
-                      <p style={{fontSize: '22px'}}>pH: <span style={{color: '#99EBFF'}}>{res.serumData.ph}</span></p>
-                      <p style={{fontSize: '22px'}}>TOX: <span style={{color: '#FF6666'}}>{res.serumData.tox}</span></p>
-                    </>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+                      <div>
+                        <p style={{fontSize: '22px'}}>pH: <span style={{color: '#99EBFF'}}>{res.serumData.ph}</span></p>
+                        <p style={{fontSize: '22px'}}>TOX: <span style={{color: '#FF6666'}}>{res.serumData.tox}</span></p>
+                      </div>
+                      <div style={{background: '#000', padding: '20px', border: '1px solid #333'}}>
+                        {res.serumData.steps.map((s, i) => <p key={i} style={{fontSize: '14px', margin: '10px 0'}}>{s}</p>)}
+                      </div>
+                    </div>
                   )}
-                </div>
-                {!res.isLethal && (
-                  <div style={{background: '#000', padding: '20px', border: '1px solid #333'}}>
-                    <b style={{color: '#EBBBFF'}}>SYNTHESIS STEPS:</b>
-                    {res.serumData.steps.map((s, i) => <p key={i} style={{fontSize: '14px', margin: '10px 0'}}>{s}</p>)}
-                  </div>
-                )}
-              </div>
-            )}
+                </>
+              )}
+              <p style={{ color: res.color, fontWeight: 'bold', marginTop: '10px' }}>{view === 'splicer' ? res.splicerReport.alignment : ""}</p>
+            </div>
 
             {res.canSave && (
               <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
