@@ -6,6 +6,9 @@ const App = () => {
   const [slotB, setSlotB] = useState(null);
   const [inventory, setInventory] = useState([]);
   const [hybridName, setHybridName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [hoveredGene, setHoveredGene] = useState(null); // Tooltip state
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const baseGenes = Array.from({ length: 500 }, (_, i) => {
@@ -36,59 +39,102 @@ const App = () => {
     setInventory(baseGenes);
   }, []);
 
+  const handleMouseMove = (e) => {
+    setMousePos({ x: e.clientX + 15, y: e.clientY + 15 });
+  };
+
+  const filteredInventory = inventory.filter(g => 
+    g.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    g.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
     const combo = [g1.type, g2.type].sort().join('+');
     const isLethal = (combo.includes("Botanical") && !combo.includes("Botanical+Botanical")) || 
                      (combo.includes("Human") && combo.includes("Botanical"));
+    
     const splicerData = {
       dominant: { feature: g1.feature, source: g1.name },
       recessive: { trait: g2.trait, source: g2.name },
       reason: isLethal ? "Molecular rejection: Cross-kingdom cellular walls cannot fuse." : 
               (g1.type === g2.type ? "High alignment: Shared taxonomic lineage." : "Stable hybrid: Forced genomic splicing successful.")
     };
-    let ph = 7.0; 
-    let toxicity = 5.0;
+
+    let ph = 7.0; let toxicity = 5.0;
     if (combo.includes("Human")) toxicity += 45.0;
     if (combo.includes("Botanical")) ph -= 2.8;
     if (combo.includes("Aquatic")) ph += 1.4;
     if (g1.type !== g2.type) toxicity += 12.0;
 
-    const serumData = {
-      ph: ph.toFixed(1),
-      tox: `${toxicity.toFixed(1)}%`,
+    return { 
+      isLethal, canSave: !isLethal, 
+      color: isLethal ? "#ff3333" : (view === 'splicer' ? "#00d4ff" : "#bb00ff"), 
+      splicerData, 
+      serumData: { ph: ph.toFixed(1), tox: `${toxicity.toFixed(1)}%`, 
       composition: [
         { label: "Primary Extract", val: `${g1.compound} (40%)` },
         { label: "Secondary Isolate", val: `${g2.compound} (35%)` },
-        { label: "Diluent", val: "Saline Buffer (20%)" },
-        { label: "Catalyst", val: "Reactive Enzyme (5%)" }
-      ]
+      ]}
     };
-
-    return { isLethal, canSave: !isLethal, color: isLethal ? "#ff3333" : (view === 'splicer' ? "#00d4ff" : "#bb00ff"), splicerData, serumData };
   };
 
   const res = getAnalysis(slotA, slotB);
   const clear = () => { setSlotA(null); setSlotB(null); setHybridName(""); };
 
+  const archiveResult = () => {
+    if (!hybridName) return alert("ENTER NOMENCLATURE.");
+    const newEntry = {
+      id: `${view === 'splicer' ? 'HYB' : 'SRM'}-${Math.floor(Math.random() * 9000 + 1000)}`,
+      name: hybridName.toUpperCase(),
+      type: `${slotA.type}/${slotB.type}`,
+      icon: view === 'splicer' ? "🧬" : "🧪",
+      color: res.color,
+      isHybrid: true,
+      feature: res.splicerData.dominant.feature,
+      compound: slotA.compound
+    };
+    setInventory([newEntry, ...inventory]);
+    clear();
+  };
+
   return (
-    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#050505', color: '#ccc', fontFamily: 'monospace' }}>
+    <div onMouseMove={handleMouseMove} style={{ display: 'flex', height: '100vh', backgroundColor: '#050505', color: '#ccc', fontFamily: 'monospace', overflow: 'hidden' }}>
       
+      {/* TOOLTIP COMPONENT */}
+      {hoveredGene && (
+        <div style={{ position: 'fixed', left: mousePos.x, top: mousePos.y, zIndex: 100, background: '#111', border: `1px solid ${hoveredGene.color}`, padding: '10px', width: '220px', pointerEvents: 'none', boxShadow: '0 0 15px rgba(0,0,0,0.5)' }}>
+          <p style={{ color: hoveredGene.color, margin: '0 0 5px 0', fontSize: '12px', fontWeight: 'bold' }}>{hoveredGene.name.toUpperCase()}</p>
+          <p style={{ fontSize: '10px', color: '#888' }}>CLASS: {hoveredGene.type}</p>
+          <hr style={{ borderColor: '#222' }} />
+          <p style={{ fontSize: '10px' }}><span style={{ color: '#00d4ff' }}>GENOMIC:</span> {hoveredGene.feature}</p>
+          <p style={{ fontSize: '10px' }}><span style={{ color: '#bb00ff' }}>CHEMICAL:</span> {hoveredGene.compound}</p>
+        </div>
+      )}
+
       {/* SIDEBAR */}
       <div style={{ width: '300px', borderRight: '1px solid #222', overflowY: 'auto', padding: '15px', background: '#0a0a0a' }}>
         <button onClick={() => {setView(view === 'splicer' ? 'serum' : 'splicer'); clear();}} 
-                style={{ width: '100%', padding: '12px', background: view === 'serum' ? '#bb00ff' : '#00d4ff', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '20px' }}>
-            SWITCH TO {view === 'splicer' ? 'SERUM LAB' : 'G-SPLICER'}
+                style={{ width: '100%', padding: '12px', background: view === 'serum' ? '#bb00ff' : '#00d4ff', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px' }}>
+            {view === 'splicer' ? 'GOTO: SERUM LAB' : 'GOTO: SPLICER'}
         </button>
-        {inventory.map(g => (
-          <div key={g.id} draggable onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(g))} 
-               style={{ padding: '8px', margin: '4px 0', background: '#111', borderLeft: `3px solid ${g.color}`, cursor: 'grab', fontSize: '11px' }}>
-            {g.id} | {g.name}
+
+        <input type="text" placeholder="FILTER SAMPLES..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
+               style={{ width: '100%', padding: '8px', background: '#000', border: '1px solid #333', color: '#00d4ff', fontSize: '11px', marginBottom: '10px' }} />
+
+        {filteredInventory.map(g => (
+          <div key={g.id} 
+               onMouseEnter={() => setHoveredGene(g)}
+               onMouseLeave={() => setHoveredGene(null)}
+               draggable={!g.isHybrid} 
+               onDragStart={(e) => !g.isHybrid && e.dataTransfer.setData("gene", JSON.stringify(g))} 
+               style={{ padding: '8px', margin: '4px 0', background: g.isHybrid ? '#1a1a1a' : '#111', borderLeft: `3px solid ${g.color}`, cursor: g.isHybrid ? 'default' : 'grab', fontSize: '11px' }}>
+            <span style={{color: '#555'}}>{g.id}</span> | {g.name}
           </div>
         ))}
       </div>
 
-      {/* LAB WORKSPACE */}
+      {/* WORKSPACE */}
       <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <h1 style={{ color: '#fff' }}>{view === 'splicer' ? '🧬 GENOME' : '🧪 SERUM_LAB'}</h1>
         
@@ -98,7 +144,7 @@ const App = () => {
               style={view === 'splicer' ? { width: '150px', height: '200px', border: '2px solid #333', background: '#0e0e0e', textAlign: 'center', padding: '15px' } : { width: '100px', height: '170px', border: '2px solid #fff', borderRadius: '0 0 35px 35px', background: '#000', overflow: 'hidden', position: 'relative' }}>
               {view === 'serum' && slot && <div style={{ position: 'absolute', bottom: 0, width: '100%', height: '70%', background: slot.color, opacity: 0.5 }} />}
               <div style={{ position: 'relative', zIndex: 2, marginTop: view === 'serum' ? '40px' : '5px' }}>
-                {slot ? <> <div style={{ fontSize: '24px' }}>{slot.icon}</div> <p style={{fontSize: '10px'}}>{slot.name}</p> </> : <p style={{marginTop: '40%', color: '#333'}}>EMPTY</p>}
+                {slot ? <> <div style={{ fontSize: '24px' }}>{slot.icon}</div> <p style={{fontSize: '10px'}}>{slot.name}</p> </> : <p style={{marginTop: '40%', color: '#333'}}>IDLE</p>}
               </div>
             </div>
           ))}
@@ -108,7 +154,7 @@ const App = () => {
           <div style={{ width: '100%', maxWidth: '800px', padding: '25px', border: `1px solid ${res.color}`, background: '#0d0d0f' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <h2 style={{ color: res.color, margin: 0 }}>{res.isLethal ? 'SYSTEM_FAILURE' : 'STABLE_ANALYSIS'}</h2>
-                <button onClick={clear} style={{ background: '#222', color: '#888', border: '1px solid #444', cursor: 'pointer' }}>RESET</button>
+                <button onClick={clear} style={{ background: '#222', color: '#888', border: '1px solid #444', cursor: 'pointer', padding: '5px 10px' }}>RESET</button>
             </div>
 
             {view === 'splicer' ? (
@@ -117,7 +163,7 @@ const App = () => {
                     <p style={{ color: '#00d4ff', fontSize: '10px' }}>// PHENOTYPE_DISTRIBUTION</p>
                     <p style={{ fontSize: '13px' }}><strong>Dominant:</strong> {res.splicerData.dominant.feature}</p>
                     <p style={{ fontSize: '10px', color: '#fff' }}>Source: {res.splicerData.dominant.source}</p>
-                    <hr style={{borderColor: '#111'}}/>
+                    <hr style={{borderColor: '#111', margin: '10px 0'}}/>
                     <p style={{ fontSize: '13px' }}><strong>Recessive:</strong> {res.splicerData.recessive.trait}</p>
                     <p style={{ fontSize: '10px', color: '#fff' }}>Source: {res.splicerData.recessive.source}</p>
                 </div>
@@ -127,7 +173,6 @@ const App = () => {
                 </div>
               </div>
             ) : (
-              /* B) SERUM LAB REPORT */
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ background: '#000', padding: '10px', border: '1px solid #222' }}>
@@ -151,7 +196,7 @@ const App = () => {
             {res.canSave && (
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #222' }}>
                 <input placeholder="ENTER NOMENCLATURE..." value={hybridName} onChange={(e) => setHybridName(e.target.value)} style={{ background: '#000', color: '#00ff88', border: '1px solid #333', padding: '10px', flex: 1 }} />
-                <button style={{ background: res.color, color: '#000', border: 'none', padding: '10px 20px', fontWeight: 'bold', cursor: 'pointer' }}>
+                <button onClick={archiveResult} style={{ background: res.color, color: '#000', border: 'none', padding: '10px 20px', fontWeight: 'bold', cursor: 'pointer' }}>
                   {view === 'splicer' ? 'ARCHIVE_SPECIMEN' : 'DISTILL_SERUM'}
                 </button>
               </div>
