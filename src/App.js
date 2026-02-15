@@ -1,160 +1,161 @@
 import React, { useState } from 'react';
 
-// --- DATA: Hand-named "Master" Genes ---
-const masterGenes = {
-  "GENE-001": { name: "Lion", type: "Mammal", traits: ["Apex Predation", "Muscle Density"], icon: "🦁" },
-  "GENE-002": { name: "Eagle", type: "Avian", traits: ["Atmospheric Lift", "Telescopic Vision"], icon: "🦅" },
-  "GENE-003": { name: "Oak", type: "Botanical", traits: ["Lignin Reinforcement", "Photosynthesis"], icon: "🌳" },
-  "GENE-004": { name: "Shark", type: "Aquatic", traits: ["Electrolocation", "Cartilage Skeleton"], icon: "🦈" },
-  "GENE-005": { name: "Spider", type: "Arachnid", traits: ["Protein Fiber Secretion", "Wall-Clinging"], icon: "🕷️" },
-};
-
 const App = () => {
   const [slotA, setSlotA] = useState(null);
   const [slotB, setSlotB] = useState(null);
 
-  // --- GENERATOR: Automatically names and classifies all 500 genes ---
+  // --- DATA GENERATOR: 500 Unique Names & Traits ---
   const allGenes = Array.from({ length: 500 }, (_, i) => {
-    const id = `GENE-${String(i + 1).padStart(3, '0')}`;
-    
-    // If it's in our hand-named list, use that.
-    if (masterGenes[id]) return { id, ...masterGenes[id] };
+    const prefixes = ["Glacial", "Volcanic", "Apex", "Shadow", "Neon", "Primal", "Cyber", "Ethereal", "Storm", "Deep-Sea"];
+    const mammals = ["Lion", "Wolf", "Bear", "Rhino", "Stallion"];
+    const avians = ["Falcon", "Owl", "Raven", "Eagle", "Vulture"];
+    const botany = ["Oak", "Fern", "Lotus", "Ivy", "Willow"];
+    const aquatic = ["Shark", "Kraken", "Manta", "Eel", "Orca"];
 
-    // Otherwise, generate data based on ID "Families"
-    let type, traits, icon;
-    if (i < 100) { 
-      type = "Mammal"; traits = ["Endothermic Regulation", "Bone Density"]; icon = "🦴"; 
-    } else if (i < 200) { 
-      type = "Avian"; traits = ["Hollow Bone Structure", "Rapid Metabolism"]; icon = "🪶"; 
-    } else if (i < 300) { 
-      type = "Botanical"; traits = ["Cellulose Wall", "Carbon Sequestration"]; icon = "🌿"; 
-    } else if (i < 400) { 
-      type = "Aquatic"; traits = ["Hydrodynamic Scaling", "Oxygen Filtration"]; icon = "💧"; 
-    } else { 
-      type = "Inorganic"; traits = ["Silicon Lattice", "Conductive Surface"]; icon = "💎"; 
+    const id = `GENE-${String(i + 1).padStart(3, '0')}`;
+    let type, name, trait, icon;
+
+    const pre = prefixes[i % prefixes.length];
+
+    if (i < 125) {
+      type = "Mammalian";
+      name = `${pre} ${mammals[i % mammals.length]}`;
+      trait = "Advanced Limb Musculature";
+      icon = "🦁";
+    } else if (i < 250) {
+      type = "Avian";
+      name = `${pre} ${avians[i % avians.length]}`;
+      trait = "Hollow Bone Aerodynamics";
+      icon = "🦅";
+    } else if (i < 375) {
+      type = "Botanical";
+      name = `${pre} ${botany[i % botany.length]}`;
+      trait = "Chloroplast Energy Synthesis";
+      icon = "🌿";
+    } else {
+      type = "Aquatic";
+      name = `${pre} ${aquatic[i % aquatic.length]}`;
+      trait = "Hydrostatic Gilled Respiration";
+      icon = "🦈";
     }
 
-    return {
-      id,
-      name: `${type} Variant ${id.split('-')[1]}`,
-      type,
-      traits,
-      icon
-    };
+    return { id, name, type, trait, icon };
   });
 
-  const getCompatibility = (g1, g2) => {
+  const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
-    
-    // Logic for cross-type compatibility
-    const sameType = g1.type === g2.type;
-    const isInorganic = g1.type === "Inorganic" || g2.type === "Inorganic";
-    
-    if (isInorganic && !sameType) {
-      return {
-        status: "❌ SYSTEM CRITICAL",
-        color: "#ff0055",
-        reason: "Biological and Inorganic matter cannot fuse without a Cybernetic Bridge.",
-        transfer: "Severe cellular rejection."
-      };
-    }
 
-    if (sameType) {
-      return {
-        status: "✅ HIGH COMPATIBILITY",
-        color: "#00ff88",
-        reason: `Both sequences are ${g1.type}. Minimal risk of mutation rejection.`,
-        transfer: `${g1.traits[0]} + ${g2.traits[1]}`
-      };
-    }
+    const isMatch = g1.type === g2.type;
+    const comboKey = [g1.type, g2.type].sort().join('+');
 
-    return {
-      status: "⚠️ HYBRID STABLE",
-      color: "#ffcc00",
-      reason: `Cross-species fusion between ${g1.type} and ${g2.type} detected. Resulting chimera will be sterile.`,
-      transfer: `${g1.traits[1]} (Primary) | ${g2.traits[0]} (Secondary)`
+    let result = {
+      status: "STABLE HYBRID",
+      color: "#00d4ff",
+      reason: "Molecular structures aligned.",
+      inheritance: []
     };
+
+    // Detailed Compatibility Logic
+    if (isMatch) {
+      result.status = "OPTIMAL SYNERGY";
+      result.color = "#00ff88";
+      result.reason = `Both sequences share ${g1.type} DNA architecture. High success rate with 0% risk of cellular degradation.`;
+      result.inheritance = [
+        `Dominant: ${g1.trait} (Extracted from ${g1.name})`,
+        `Recessive: ${g2.trait} (Extracted from ${g2.name})`
+      ];
+    } else if (comboKey === "Avian+Mammalian") {
+      result.status = "COMPLEX CHIMERA";
+      result.color = "#ffcc00";
+      result.reason = "Endothermic heat signatures match, but skeletal density conflicts. Hybrid will require artificial calcium support.";
+      result.inheritance = [
+        `Structural: ${g2.trait} (From ${g2.name})`,
+        `Neural: ${g1.trait} (From ${g1.name})`
+      ];
+    } else if (comboKey.includes("Botanical")) {
+      result.status = "INCOMPATIBLE";
+      result.color = "#ff4b2b";
+      result.reason = `Biological Failure: ${g1.type === "Botanical" ? g1.name : g2.name} utilizes Cellulose cell walls which cannot fuse with the soft tissue membranes of the partner.`;
+      result.inheritance = ["FAILURE: Apoptosis (Cell death) detected within 4.2 milliseconds."];
+    } else {
+      result.status = "EXPERIMENTAL";
+      result.color = "#bb00ff";
+      result.reason = "Unprecedented taxonomic cross. Genetic drifting likely.";
+      result.inheritance = [
+        `Primary: ${g1.trait} (Derived from ${g1.name})`,
+        `Secondary: ${g2.trait} (Derived from ${g2.name})`
+      ];
+    }
+    return result;
   };
 
-  const analysis = getCompatibility(slotA, slotB);
+  const analysis = getAnalysis(slotA, slotB);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#0a0a0b', color: '#afafaf', fontFamily: '"Courier New", Courier, monospace' }}>
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#050505', color: '#ccc', fontFamily: 'monospace' }}>
       
-      {/* SIDEBAR: Scrollable Bank */}
-      <div style={{ width: '320px', borderRight: '1px solid #222', overflowY: 'auto', padding: '15px', background: '#0e0e10' }}>
-        <h3 style={{ color: '#00d4ff', letterSpacing: '2px' }}>// GENOMIC_DATABASE</h3>
+      {/* SIDEBAR */}
+      <div style={{ width: '320px', borderRight: '1px solid #222', overflowY: 'auto', padding: '15px', background: '#0a0a0a' }}>
+        <h3 style={{ color: '#00d4ff', borderBottom: '1px solid #333', paddingBottom: '10px' }}>GENETIC INVENTORY</h3>
         {allGenes.map(gene => (
           <div 
             key={gene.id}
             draggable
             onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(gene))}
             style={{ 
-              padding: '12px', 
-              margin: '8px 0', 
-              background: '#16161a', 
-              border: '1px solid #222', 
-              cursor: 'grab',
-              fontSize: '13px'
+              padding: '10px', margin: '5px 0', background: '#111', 
+              border: '1px solid #222', cursor: 'grab', fontSize: '12px' 
             }}
-            onMouseEnter={(e) => e.target.style.borderColor = '#444'}
-            onMouseLeave={(e) => e.target.style.borderColor = '#222'}
           >
-            <span style={{ color: '#00d4ff' }}>{gene.id}</span> | {gene.name} {gene.icon}
+            <span style={{ color: '#00d4ff' }}>{gene.id}</span> | <strong>{gene.name}</strong>
           </div>
         ))}
       </div>
 
-      {/* MAIN LAB */}
+      {/* WORKSPACE */}
       <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ color: 'white', textShadow: '0 0 10px #00d4ff' }}>FUSION ANALYSIS LAB</h1>
+        <h1 style={{ letterSpacing: '5px', color: '#fff' }}>GENE_SPLICER_V2</h1>
         
-        <div style={{ display: 'flex', gap: '30px', margin: '50px 0' }}>
-          {[slotA, slotB].map((slot, index) => (
+        <div style={{ display: 'flex', gap: '40px', margin: '40px 0' }}>
+          {[slotA, slotB].map((slot, i) => (
             <div 
-              key={index}
+              key={i}
               onDragOver={(e) => e.preventDefault()}
               onDrop={(e) => {
                 const data = JSON.parse(e.dataTransfer.getData("gene"));
-                index === 0 ? setSlotA(data) : setSlotB(data);
+                i === 0 ? setSlotA(data) : setSlotB(data);
               }}
               style={{ 
-                width: '180px', height: '180px', 
-                border: `2px ${slot ? 'solid' : 'dashed'} #333`, 
-                borderRadius: '5px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                background: slot ? '#111' : 'transparent',
-                boxShadow: slot ? '0 0 15px rgba(0,212,255,0.1)' : 'none'
+                width: '200px', height: '220px', border: `2px solid ${slot ? '#00d4ff' : '#333'}`,
+                background: '#0e0e0e', textAlign: 'center', padding: '10px'
               }}
             >
               {slot ? (
                 <>
-                  <div style={{ fontSize: '40px' }}>{slot.icon}</div>
-                  <div style={{ color: '#00d4ff', fontSize: '12px', marginTop: '10px' }}>{slot.id}</div>
-                  <div style={{ fontSize: '14px' }}>{slot.name}</div>
+                  <div style={{ fontSize: '50px' }}>{slot.icon}</div>
+                  <h4 style={{ color: '#fff' }}>{slot.name}</h4>
+                  <p style={{ fontSize: '10px' }}>{slot.trait}</p>
                 </>
-              ) : `DROP SEQUENCE ${index === 0 ? 'ALPHA' : 'BETA'}`}
+              ) : `DRAG GENE ${i === 0 ? 'A' : 'B'}`}
             </div>
           ))}
         </div>
 
+        {/* DETAILED RESULTS */}
         {analysis && (
-          <div style={{ maxWidth: '700px', width: '100%', padding: '25px', borderLeft: `5px solid ${analysis.color}`, background: '#111', borderRadius: '4px' }}>
-            <h2 style={{ color: analysis.color, marginTop: 0 }}>{analysis.status}</h2>
-            <p><strong>DIAGNOSTIC:</strong> {analysis.reason}</p>
-            <div style={{ marginTop: '20px', padding: '15px', background: '#000', border: '1px solid #222' }}>
-              <strong style={{ color: '#00d4ff' }}>EXPECTED PHENOTYPE TRANSFER:</strong>
-              <ul style={{ marginTop: '10px' }}>
-                <li>Primary Trait: {analysis.transfer.split('|')[0]}</li>
-                {analysis.transfer.includes('|') && <li>Secondary Trait: {analysis.transfer.split('|')[1]}</li>}
-              </ul>
+          <div style={{ width: '100%', maxWidth: '800px', padding: '30px', background: '#111', border: `1px solid ${analysis.color}`, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: '-15px', left: '20px', background: analysis.color, color: '#000', padding: '2px 10px', fontWeight: 'bold' }}>
+              LAB REPORT: {analysis.status}
             </div>
-            <button 
-              onClick={() => {setSlotA(null); setSlotB(null);}}
-              style={{ marginTop: '20px', background: 'none', border: '1px solid #444', color: '#888', padding: '8px 15px', cursor: 'pointer' }}
-            >
-              CLEAR TERMINAL
-            </button>
+            <p style={{ fontSize: '16px', lineHeight: '1.5' }}><strong>DIAGNOSTIC SUMMARY:</strong> {analysis.reason}</p>
+            <hr style={{ borderColor: '#222' }} />
+            <h4 style={{ color: analysis.color }}>GENETIC INHERITANCE MAP:</h4>
+            <ul>
+              {analysis.inheritance.map((item, idx) => (
+                <li key={idx} style={{ margin: '10px 0', color: '#fff' }}>{item}</li>
+              ))}
+            </ul>
+            <button onClick={() => {setSlotA(null); setSlotB(null);}} style={{ background: '#222', color: '#fff', border: 'none', padding: '10px 20px', cursor: 'pointer', marginTop: '10px' }}>RESET SEQUENCE</button>
           </div>
         )}
       </div>
