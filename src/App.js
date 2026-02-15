@@ -39,19 +39,16 @@ const App = () => {
     for (let i = 0; i < 60; i++) {
       baseSpecies.forEach((species) => {
         if (count < 600) {
-          // HUMAN-SPECIFIC LABELING: Gender and Age
           let finalName = "";
           if (species.type === "Human") {
             const gender = i % 2 === 0 ? "Male" : "Female";
-            const age = 18 + (i % 50); // Generates ages from 18 to 67
+            const age = 18 + (i % 50);
             finalName = `${gender} (${age}) Human`;
           } else {
             finalName = `${animalRegions[i]} ${species.name}`;
           }
-          
           const feat = species.features[count % species.features.length];
           const trait = species.traits[(count + 1) % species.traits.length];
-          
           tempInventory.push({
             id: `DB-${count}`,
             name: finalName,
@@ -68,7 +65,6 @@ const App = () => {
         }
       });
     }
-
     setInventory(tempInventory);
   }, []);
 
@@ -117,6 +113,51 @@ const App = () => {
   };
 
   const res = getAnalysis(slotA, slotB);
+
+  const handleDownload = () => {
+    if (!res) return;
+    const isHumanEnhancer = slotA.type === "Human" && slotB.type === "Human";
+    
+    const docContent = `
+============================================================
+           OFFICIAL LAB REPORT: ${hybridName.toUpperCase()}
+============================================================
+GENETIC SOURCE A: ${slotA.name} (${slotA.type})
+GENETIC SOURCE B: ${slotB.name} (${slotB.type})
+OVERALL STABILITY: ${res.stability}%
+TOXICITY RATING: ${res.toxicity}
+TARGET pH: ${res.ph}
+------------------------------------------------------------
+SERUM CONSTITUENTS:
+- Base: 500ml Isotonic Saline Solution
+- Carriers: Adeno-Associated Viral (AAV) Vectors
+- Splicing Agents: ${slotA.compound} & ${slotB.compound}
+- Stabilizers: ${isHumanEnhancer ? "Neuro-Peptide Buffer" : "Synthetic Protein Scaffold"}
+
+SYNTHESIS PROCESS:
+1. Centrifuge Source A and B at 15,000 RPM to isolate specific strands.
+2. Introduce ${slotA.compound} into the viral carrier for 24 hours.
+3. Cold-fuse with ${slotB.compound} at ${res.ph} pH to prevent strand rejection.
+4. Filter through a carbon-nanotube mesh to reduce toxicity to ${res.toxicity}.
+
+EXPECTED PHYSICAL ALTERATIONS:
+- Primary: Development of [${slotA.feature}].
+- Secondary: Integration of [${slotB.trait}] pathways.
+- ${isHumanEnhancer ? "REINFORCED: Accelerated cellular repair and increased muscle-fiber density." : "MUTATION: Structural skeletal shifts and skin pigment variance."}
+
+EXPECTED NEUROLOGICAL IMPACT:
+- Current Match: ${res.report.neural}
+- ${isHumanEnhancer ? "COGNITIVE: Increased synaptic firing speed; 30% reduction in reaction time." : "INSTINCTUAL: Subject will manifest predatory/defensive animalistic behaviors."}
+
+ADMINISTRATION:
+${isHumanEnhancer ? "Intravenous drip (2 hours) followed by 12 hours of monitored sleep." : "Direct spinal injection. Subject must be sedated during the 6-hour mutation window."}
+============================================================
+    `;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([docContent], { type: 'text/plain' }));
+    link.download = `${hybridName.replace(/\s+/g, '_')}_Lab_Report.txt`;
+    link.click();
+  };
 
   return (
     <div onMouseMove={(e) => setMousePos({ x: e.clientX + 20, y: e.clientY + 20 })} 
@@ -202,10 +243,7 @@ const App = () => {
                   setInventory([newEntry, ...inventory]);
                   setSlotA(null); setSlotB(null); setHybridName("");
                 }} style={{ background: res.color, color: '#000', border: 'none', padding: '0 25px', fontWeight: 'bold', cursor: 'pointer' }}>SAVE</button>
-                <button onClick={() => {
-                   const content = `HYBRID: ${hybridName}\nSTABILITY: ${res.stability}%\nNEURAL MATCH: ${res.report.neural}\n${res.report.physical}\n${res.report.secondary}\n\nSERUM DATA:\n${res.serumB.steps.join('\n')}`;
-                   const link = document.createElement('a'); link.href = URL.createObjectURL(new Blob([content])); link.download = `${hybridName}.txt`; link.click();
-                }} style={{ background: '#333', color: '#FFF', border: 'none', padding: '0 15px', cursor: 'pointer' }}>DOC</button>
+                <button onClick={handleDownload} style={{ background: '#333', color: '#FFF', border: 'none', padding: '0 15px', cursor: 'pointer' }}>DOC</button>
               </div>
             )}
           </div>
