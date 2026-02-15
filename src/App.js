@@ -114,7 +114,7 @@ const App = () => {
 
       {/* WORKSPACE */}
       <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ letterSpacing: '5px', color: '#fff' }}>GENE_SPLICER_V2</h1>
+        <h1 style={{ letterSpacing: '5px', color: '#fff' }}>GENE PLAYGROUND</h1>
         
         <div style={{ display: 'flex', gap: '40px', margin: '40px 0' }}>
           {[slotA, slotB].map((slot, i) => (
