@@ -71,10 +71,17 @@ const App = () => {
   const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
     const isBothHuman = g1.type === "Human" && g2.type === "Human";
-    const stability = isBothHuman ? 100 : ((g1.type === g2.type) ? 95 : 65);
-    const toxVal = parseInt(g1.baseTox) + parseInt(g2.baseTox);
+    
+    // NEW: Dynamic Stability Calculation
+    const phDiff = Math.abs(parseFloat(g1.basePh) - parseFloat(g2.basePh));
+    const toxSum = parseInt(g1.baseTox) + parseInt(g2.baseTox);
+    const baseStability = isBothHuman ? 100 : (g1.type === g2.type ? 90 : 60);
+    // Stability drops based on pH mismatch and high combined toxicity
+    const stability = Math.max(5, (baseStability - (phDiff * 15) - (toxSum * 0.1))).toFixed(0);
+
+    const toxVal = toxSum;
     const phVal = ((parseFloat(g1.basePh) + parseFloat(g2.basePh)) / 2).toFixed(1);
-    const isLethal = stability < 40 || toxVal > 160;
+    const isLethal = stability < 35 || toxVal > 160;
 
     let neuralImpact = "";
     if (isLethal) {
