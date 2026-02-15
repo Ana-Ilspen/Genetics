@@ -39,20 +39,14 @@ const App = () => {
   const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
     const combo = [g1.type, g2.type].sort().join('+');
-    
-    // Compatibility Engine
     const isLethal = (combo.includes("Botanical") && !combo.includes("Botanical+Botanical")) || 
                      (combo.includes("Human") && combo.includes("Botanical"));
-    
-    // A) Splicer Features
     const splicerData = {
       dominant: { feature: g1.feature, source: g1.name },
       recessive: { trait: g2.trait, source: g2.name },
       reason: isLethal ? "Molecular rejection: Cross-kingdom cellular walls cannot fuse." : 
               (g1.type === g2.type ? "High alignment: Shared taxonomic lineage." : "Stable hybrid: Forced genomic splicing successful.")
     };
-
-    // B) Serum Features
     let ph = 7.0; 
     let toxicity = 5.0;
     if (combo.includes("Human")) toxicity += 45.0;
@@ -96,12 +90,12 @@ const App = () => {
 
       {/* LAB WORKSPACE */}
       <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ color: '#fff' }}>{view === 'splicer' ? '🧬 GENOME_SPLICER' : '🧪 SERUM_LAB'}</h1>
+        <h1 style={{ color: '#fff' }}>{view === 'splicer' ? '🧬 GENOME' : '🧪 SERUM_LAB'}</h1>
         
         <div style={{ display: 'flex', gap: '30px', margin: '30px 0' }}>
           {[slotA, slotB].map((slot, i) => (
             <div key={i} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { const d = JSON.parse(e.dataTransfer.getData("gene")); i === 0 ? setSlotA(d) : setSlotB(d); }}
-              style={view === 'splicer' ? { width: '150px', height: '200px', border: '2px solid #333', background: '#0e0e0e', textAlign: 'center', padding: '15px' } : { width: '100px', height: '170px', border: '2px solid #555', borderRadius: '0 0 35px 35px', background: '#000', overflow: 'hidden', position: 'relative' }}>
+              style={view === 'splicer' ? { width: '150px', height: '200px', border: '2px solid #333', background: '#0e0e0e', textAlign: 'center', padding: '15px' } : { width: '100px', height: '170px', border: '2px solid #fff', borderRadius: '0 0 35px 35px', background: '#000', overflow: 'hidden', position: 'relative' }}>
               {view === 'serum' && slot && <div style={{ position: 'absolute', bottom: 0, width: '100%', height: '70%', background: slot.color, opacity: 0.5 }} />}
               <div style={{ position: 'relative', zIndex: 2, marginTop: view === 'serum' ? '40px' : '5px' }}>
                 {slot ? <> <div style={{ fontSize: '24px' }}>{slot.icon}</div> <p style={{fontSize: '10px'}}>{slot.name}</p> </> : <p style={{marginTop: '40%', color: '#333'}}>EMPTY</p>}
@@ -118,15 +112,14 @@ const App = () => {
             </div>
 
             {view === 'splicer' ? (
-              /* A) GENOME SPLICER REPORT */
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div style={{ background: '#000', padding: '15px', border: '1px solid #222' }}>
                     <p style={{ color: '#00d4ff', fontSize: '10px' }}>// PHENOTYPE_DISTRIBUTION</p>
                     <p style={{ fontSize: '13px' }}><strong>Dominant:</strong> {res.splicerData.dominant.feature}</p>
-                    <p style={{ fontSize: '10px', color: '#555' }}>Source: {res.splicerData.dominant.source}</p>
+                    <p style={{ fontSize: '10px', color: '#fff' }}>Source: {res.splicerData.dominant.source}</p>
                     <hr style={{borderColor: '#111'}}/>
                     <p style={{ fontSize: '13px' }}><strong>Recessive:</strong> {res.splicerData.recessive.trait}</p>
-                    <p style={{ fontSize: '10px', color: '#555' }}>Source: {res.splicerData.recessive.source}</p>
+                    <p style={{ fontSize: '10px', color: '#fff' }}>Source: {res.splicerData.recessive.source}</p>
                 </div>
                 <div style={{ background: '#000', padding: '15px', border: '1px solid #222' }}>
                     <p style={{ color: '#00d4ff', fontSize: '10px' }}>// COMPATIBILITY_LOG</p>
@@ -138,11 +131,11 @@ const App = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ background: '#000', padding: '10px', border: '1px solid #222' }}>
-                        <p style={{ fontSize: '9px', color: '#555' }}>pH_LEVEL</p>
+                        <p style={{ fontSize: '9px', color: '#fff' }}>pH_LEVEL</p>
                         <p style={{ color: '#00d4ff', fontSize: '18px' }}>{res.serumData.ph}</p>
                     </div>
                     <div style={{ background: '#000', padding: '10px', border: '1px solid #222' }}>
-                        <p style={{ fontSize: '9px', color: '#555' }}>TOXICITY</p>
+                        <p style={{ fontSize: '9px', color: '#fff' }}>TOXICITY</p>
                         <p style={{ color: parseFloat(res.serumData.tox) > 40 ? '#ff3333' : '#00ff88', fontSize: '18px' }}>{res.serumData.tox}</p>
                     </div>
                 </div>
