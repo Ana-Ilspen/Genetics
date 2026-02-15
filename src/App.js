@@ -1,111 +1,162 @@
 import React, { useState } from 'react';
 
-// --- DATA: Gene Definitions ---
-const geneLibrary = {
-  "GENE-001": { name: "Lion", type: "Mammal", traits: ["Strength", "Claws"], icon: "🦁" },
-  "GENE-002": { name: "Eagle", type: "Avian", traits: ["Flight", "Vision"], icon: "🦅" },
-  "GENE-003": { name: "Oak", type: "Plant", traits: ["Durability", "Photosynthesis"], icon: "🌳" },
-  "GENE-004": { name: "Shark", type: "Aquatic", traits: ["Gills", "Electrolocation"], icon: "🦈" },
-  "GENE-005": { name: "Spider", type: "Insect", traits: ["Webbing", "Wall-climbing"], icon: "🕷️" },
+// --- DATA: Hand-named "Master" Genes ---
+const masterGenes = {
+  "GENE-001": { name: "Lion", type: "Mammal", traits: ["Apex Predation", "Muscle Density"], icon: "🦁" },
+  "GENE-002": { name: "Eagle", type: "Avian", traits: ["Atmospheric Lift", "Telescopic Vision"], icon: "🦅" },
+  "GENE-003": { name: "Oak", type: "Botanical", traits: ["Lignin Reinforcement", "Photosynthesis"], icon: "🌳" },
+  "GENE-004": { name: "Shark", type: "Aquatic", traits: ["Electrolocation", "Cartilage Skeleton"], icon: "🦈" },
+  "GENE-005": { name: "Spider", type: "Arachnid", traits: ["Protein Fiber Secretion", "Wall-Clinging"], icon: "🕷️" },
 };
 
 const App = () => {
   const [slotA, setSlotA] = useState(null);
   const [slotB, setSlotB] = useState(null);
 
-  // Generate 500 Genes
+  // --- GENERATOR: Automatically names and classifies all 500 genes ---
   const allGenes = Array.from({ length: 500 }, (_, i) => {
     const id = `GENE-${String(i + 1).padStart(3, '0')}`;
-    return geneLibrary[id] || { 
-      id, 
-      name: `Specimen ${i + 1}`, 
-      type: "Unknown", 
-      traits: ["Stable sequence"], 
-      icon: "🧪" 
+    
+    // If it's in our hand-named list, use that.
+    if (masterGenes[id]) return { id, ...masterGenes[id] };
+
+    // Otherwise, generate data based on ID "Families"
+    let type, traits, icon;
+    if (i < 100) { 
+      type = "Mammal"; traits = ["Endothermic Regulation", "Bone Density"]; icon = "🦴"; 
+    } else if (i < 200) { 
+      type = "Avian"; traits = ["Hollow Bone Structure", "Rapid Metabolism"]; icon = "🪶"; 
+    } else if (i < 300) { 
+      type = "Botanical"; traits = ["Cellulose Wall", "Carbon Sequestration"]; icon = "🌿"; 
+    } else if (i < 400) { 
+      type = "Aquatic"; traits = ["Hydrodynamic Scaling", "Oxygen Filtration"]; icon = "💧"; 
+    } else { 
+      type = "Inorganic"; traits = ["Silicon Lattice", "Conductive Surface"]; icon = "💎"; 
+    }
+
+    return {
+      id,
+      name: `${type} Variant ${id.split('-')[1]}`,
+      type,
+      traits,
+      icon
     };
   });
 
   const getCompatibility = (g1, g2) => {
     if (!g1 || !g2) return null;
     
-    const isPlant = g1.type === "Plant" || g2.type === "Plant";
-    const isMammal = g1.type === "Mammal" || g2.type === "Mammal";
+    // Logic for cross-type compatibility
+    const sameType = g1.type === g2.type;
+    const isInorganic = g1.type === "Inorganic" || g2.type === "Inorganic";
     
-    if (isPlant && isMammal) {
+    if (isInorganic && !sameType) {
       return {
-        status: "⚠️ UNSTABLE",
-        color: "#ff4b2b",
-        reason: "Cross-kingdom fusion (Plant/Animal) causes cellular collapse.",
-        transfer: "None (Lethal mutation)"
+        status: "❌ SYSTEM CRITICAL",
+        color: "#ff0055",
+        reason: "Biological and Inorganic matter cannot fuse without a Cybernetic Bridge.",
+        transfer: "Severe cellular rejection."
+      };
+    }
+
+    if (sameType) {
+      return {
+        status: "✅ HIGH COMPATIBILITY",
+        color: "#00ff88",
+        reason: `Both sequences are ${g1.type}. Minimal risk of mutation rejection.`,
+        transfer: `${g1.traits[0]} + ${g2.traits[1]}`
       };
     }
 
     return {
-      status: "✅ COMPATIBLE",
-      color: "#00d4ff",
-      reason: "Taxonomic alignment successful. Neural pathways compatible.",
-      transfer: `${g1.traits[0]} + ${g2.traits[0]}`
+      status: "⚠️ HYBRID STABLE",
+      color: "#ffcc00",
+      reason: `Cross-species fusion between ${g1.type} and ${g2.type} detected. Resulting chimera will be sterile.`,
+      transfer: `${g1.traits[1]} (Primary) | ${g2.traits[0]} (Secondary)`
     };
   };
 
   const analysis = getCompatibility(slotA, slotB);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#0f0f0f', color: '#e0e0e0', fontFamily: 'monospace' }}>
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#0a0a0b', color: '#afafaf', fontFamily: '"Courier New", Courier, monospace' }}>
       
-      {/* 1. Sidebar (Bank) */}
-      <div style={{ width: '300px', borderRight: '2px solid #333', overflowY: 'scroll', padding: '15px' }}>
-        <h2 style={{ color: '#00d4ff' }}>GENE BANK</h2>
+      {/* SIDEBAR: Scrollable Bank */}
+      <div style={{ width: '320px', borderRight: '1px solid #222', overflowY: 'auto', padding: '15px', background: '#0e0e10' }}>
+        <h3 style={{ color: '#00d4ff', letterSpacing: '2px' }}>// GENOMIC_DATABASE</h3>
         {allGenes.map(gene => (
           <div 
             key={gene.id}
             draggable
             onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(gene))}
-            style={{ padding: '10px', margin: '5px 0', background: '#1a1a1a', border: '1px solid #444', cursor: 'grab' }}
+            style={{ 
+              padding: '12px', 
+              margin: '8px 0', 
+              background: '#16161a', 
+              border: '1px solid #222', 
+              cursor: 'grab',
+              fontSize: '13px'
+            }}
+            onMouseEnter={(e) => e.target.style.borderColor = '#444'}
+            onMouseLeave={(e) => e.target.style.borderColor = '#222'}
           >
-            {gene.icon} {gene.id} <br/> <small>{gene.name}</small>
+            <span style={{ color: '#00d4ff' }}>{gene.id}</span> | {gene.name} {gene.icon}
           </div>
         ))}
       </div>
 
-      {/* 2. Main Lab Area */}
-      <div style={{ flex: 1, padding: '40px', textAlign: 'center' }}>
-        <h1>GENETIC COMBINER</h1>
+      {/* MAIN LAB */}
+      <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <h1 style={{ color: 'white', textShadow: '0 0 10px #00d4ff' }}>FUSION ANALYSIS LAB</h1>
         
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', margin: '40px 0' }}>
-          {/* Slot A */}
-          <div 
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => setSlotA(JSON.parse(e.dataTransfer.getData("gene")))}
-            style={{ width: '150px', height: '150px', border: '2px dashed #00d4ff', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            {slotA ? <div>{slotA.icon}<br/>{slotA.name}</div> : "Drop Gene A"}
-          </div>
-
-          <div style={{ fontSize: '40px', alignSelf: 'center' }}>+</div>
-
-          {/* Slot B */}
-          <div 
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => setSlotB(JSON.parse(e.dataTransfer.getData("gene")))}
-            style={{ width: '150px', height: '150px', border: '2px dashed #00d4ff', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            {slotB ? <div>{slotB.icon}<br/>{slotB.name}</div> : "Drop Gene B"}
-          </div>
+        <div style={{ display: 'flex', gap: '30px', margin: '50px 0' }}>
+          {[slotA, slotB].map((slot, index) => (
+            <div 
+              key={index}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                const data = JSON.parse(e.dataTransfer.getData("gene"));
+                index === 0 ? setSlotA(data) : setSlotB(data);
+              }}
+              style={{ 
+                width: '180px', height: '180px', 
+                border: `2px ${slot ? 'solid' : 'dashed'} #333`, 
+                borderRadius: '5px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                background: slot ? '#111' : 'transparent',
+                boxShadow: slot ? '0 0 15px rgba(0,212,255,0.1)' : 'none'
+              }}
+            >
+              {slot ? (
+                <>
+                  <div style={{ fontSize: '40px' }}>{slot.icon}</div>
+                  <div style={{ color: '#00d4ff', fontSize: '12px', marginTop: '10px' }}>{slot.id}</div>
+                  <div style={{ fontSize: '14px' }}>{slot.name}</div>
+                </>
+              ) : `DROP SEQUENCE ${index === 0 ? 'ALPHA' : 'BETA'}`}
+            </div>
+          ))}
         </div>
 
-        {/* 3. Results Panel */}
         {analysis && (
-          <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', border: `2px solid ${analysis.color}`, borderRadius: '10px', background: '#161616' }}>
-            <h2 style={{ color: analysis.color }}>{analysis.status}</h2>
-            <p><strong>ANALYSIS:</strong> {analysis.reason}</p>
-            <hr style={{ borderColor: '#333' }} />
-            <p><strong>TRANSFERRED TRAITS:</strong> {analysis.transfer}</p>
+          <div style={{ maxWidth: '700px', width: '100%', padding: '25px', borderLeft: `5px solid ${analysis.color}`, background: '#111', borderRadius: '4px' }}>
+            <h2 style={{ color: analysis.color, marginTop: 0 }}>{analysis.status}</h2>
+            <p><strong>DIAGNOSTIC:</strong> {analysis.reason}</p>
+            <div style={{ marginTop: '20px', padding: '15px', background: '#000', border: '1px solid #222' }}>
+              <strong style={{ color: '#00d4ff' }}>EXPECTED PHENOTYPE TRANSFER:</strong>
+              <ul style={{ marginTop: '10px' }}>
+                <li>Primary Trait: {analysis.transfer.split('|')[0]}</li>
+                {analysis.transfer.includes('|') && <li>Secondary Trait: {analysis.transfer.split('|')[1]}</li>}
+              </ul>
+            </div>
+            <button 
+              onClick={() => {setSlotA(null); setSlotB(null);}}
+              style={{ marginTop: '20px', background: 'none', border: '1px solid #444', color: '#888', padding: '8px 15px', cursor: 'pointer' }}
+            >
+              CLEAR TERMINAL
+            </button>
           </div>
         )}
-        
-        {!analysis && <p style={{ color: '#666' }}>Drag two genes from the left into the slots to begin analysis.</p>}
-        <button onClick={() => {setSlotA(null); setSlotB(null);}} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>Reset Lab</button>
       </div>
     </div>
   );
