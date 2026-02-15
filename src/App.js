@@ -11,8 +11,14 @@ const App = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const habitats = ["Arctic", "Tundra", "Desert", "Amazon", "Mountain", "Coastal", "Volcanic", "Subterranean", "Savanna", "Highland"];
-    const roles = ["Survivalist", "Athlete", "Medic", "Engineer", "Scholar", "Soldier", "Pilot", "Scout", "Stuntman", "Nomad"];
+    const prefixes = [
+      "Arctic", "Tundra", "Desert", "Amazon", "Mountain", "Coastal", "Volcanic", "Subterranean", "Savanna", "Highland",
+      "Survivalist", "Athlete", "Medic", "Engineer", "Scholar", "Soldier", "Pilot", "Scout", "Stuntman", "Nomad",
+      "Glacial", "Tropical", "Steppe", "Canyon", "Abyssal", "Boreal", "Plateau", "Delta", "Marsh", "Crag",
+      "Elite", "Rogue", "Veteran", "Novice", "Expert", "Commander", "Technician", "Specialist", "Agent", "Guard",
+      "Neon", "Cyber", "Feral", "Ancient", "Primal", "Apex", "Alpha", "Omega", "Prime", "Void",
+      "Siberian", "Bengal", "Mojave", "Himalayan", "Andean", "Pacific", "Atlantic", "Congo", "Basin", "Island"
+    ];
     
     const baseSpecies = [
       { name: "Wolf", type: "Mammalian", icon: "🐺", comp: "LUP", ph: 7.2, features: ["Neural Pack-Link", "Insulated Fur", "Scent Tracking", "Jaw Pressure"], traits: ["Night-Vision", "Stamina", "Howl Frequency"] },
@@ -20,63 +26,60 @@ const App = () => {
       { name: "Falcon", type: "Avian", icon: "🦅", comp: "FAL", ph: 7.5, features: ["Aero-Keel", "Nictitating Membrane", "Hollow Bones"], traits: ["Dive-Speed", "Telescopic Sight", "Wind Mastery"] },
       { name: "Shark", type: "Aquatic", icon: "🦈", comp: "SEL", ph: 8.2, features: ["Electro-Sense", "Dermal Denticles", "Gills"], traits: ["Blood-Scent", "Cartilage Drive", "Rampage Mode"] },
       { name: "Human", type: "Human", icon: "👤", comp: "HOM", ph: 7.4, features: ["Frontal Lobe", "Opposable Thumbs", "Bipedal Frame"], traits: ["Tool Use", "Logic", "Adaptability", "Endurance"] },
-      { name: "Spider", type: "Arachnid", icon: "🕷️", comp: "ARA", ph: 6.5, features: ["Silk Spinnerets", "Multi-Eyes", "Exoskeleton"], traits: ["Web-Building", "Wall-Climbing", "Vibration-Sense"] }
+      { name: "Spider", type: "Arachnid", icon: "🕷️", comp: "ARA", ph: 6.5, features: ["Silk Spinnerets", "Multi-Eyes", "Exoskeleton"], traits: ["Web-Building", "Wall-Climbing", "Vibration-Sense"] },
+      { name: "Eagle", type: "Avian", icon: "🦅", comp: "AQU", ph: 7.6, features: ["Talon Grip", "Retinal Zoom", "Feather-Lock"], traits: ["Aerobatics", "Kinetic Dive", "Cloud-Sight"] },
+      { name: "Octopus", type: "Aquatic", icon: "🐙", comp: "OCT", ph: 7.8, features: ["Ink Camo", "Flexible Body", "Distributed Brain"], traits: ["Suction-Grip", "Mimicry", "Regeneration"] },
+      { name: "Raven", type: "Avian", icon: "🐦", comp: "COR", ph: 7.2, features: ["Logic Center", "Mimicry Engine", "Shadow-Wing"], traits: ["Problem Solving", "Cunning", "Deception"] },
+      { name: "Scorpion", type: "Arachnid", icon: "🦂", comp: "SCO", ph: 6.2, features: ["Tail Stinger", "UV Exoskeleton", "Pincers"], traits: ["Paralytic Strike", "Burrowing", "Armor-Plate"] }
     ];
 
     const tempInventory = [];
     let count = 0;
 
-    baseSpecies.forEach(species => {
-      for (let i = 0; i < 100; i++) {
-        const isHuman = species.type === "Human";
-        const modifier = isHuman ? roles[i % 10] : habitats[i % 10];
-        
-        const feat = species.features[Math.floor((i * 1.5) % species.features.length)];
-        const trait = species.traits[Math.floor((i * 2.5) % species.traits.length)];
-        
-        tempInventory.push({
-          id: `DB-${count}`,
-          name: `${modifier} ${species.name}`,
-          type: species.type,
-          feature: feat,
-          trait: trait,
-          compound: `${species.comp}-${i}`,
-          basePh: (species.ph + (Math.random() * 0.4 - 0.2)).toFixed(1),
-          baseTox: Math.floor(Math.random() * 40) + 10,
-          color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF", Arachnid: "#E066FF" }[species.type],
-          icon: species.icon
-        });
-        count++;
-      }
+    prefixes.forEach((prefix) => {
+      baseSpecies.forEach((species) => {
+        if (count < 600) {
+          const feat = species.features[count % species.features.length];
+          const trait = species.traits[(count + 1) % species.traits.length];
+          tempInventory.push({
+            id: `DB-${count}`,
+            name: `${prefix} ${species.name}`,
+            type: species.type,
+            feature: feat,
+            trait: trait,
+            compound: `${species.comp}-${count}`,
+            basePh: (species.ph + (Math.random() * 0.4 - 0.2)).toFixed(1),
+            baseTox: Math.floor(Math.random() * 40) + 10,
+            color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF", Arachnid: "#E066FF" }[species.type],
+            icon: species.icon
+          });
+          count++;
+        }
+      });
     });
-
     setInventory(tempInventory);
   }, []);
 
   const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
-    const stability = (g1.type === g2.type) ? 95 : 65;
+    const isBothHuman = g1.type === "Human" && g2.type === "Human";
+    const stability = isBothHuman ? 100 : ((g1.type === g2.type) ? 95 : 65);
     const toxVal = parseInt(g1.baseTox) + parseInt(g2.baseTox);
     const phVal = ((parseFloat(g1.basePh) + parseFloat(g2.basePh)) / 2).toFixed(1);
     const isLethal = stability < 40 || toxVal > 160;
 
-    // Advanced Neural Match Engine
     let neuralImpact = "";
     if (isLethal) {
         neuralImpact = "TOTAL BRAIN STEM LIQUEFACTION: Subject deceased.";
+    } else if (isBothHuman) {
+        neuralImpact = "OPTIMAL SYNC: Subject experiences peak cognitive clarity and rapid muscle-memory acquisition. No cross-species rejection.";
     } else {
         const comboSet = new Set([g1.type, g2.type]);
-        if (comboSet.has("Arachnid")) {
-            neuralImpact = "SEVERE: Subject experiences phantom limb syndrome (8 limbs) and overwhelming predatory hunger.";
-        } else if (comboSet.has("Aquatic") && comboSet.has("Mammalian")) {
-            neuralImpact = "SENSORY CONFLICT: Chronic 'drowning' sensation and echo-location vertigo.";
-        } else if (comboSet.has("Avian")) {
-            neuralImpact = "STABLE: Heightened spatial awareness, though subject develops acute claustrophobia.";
-        } else if (comboSet.has("Mammalian") && comboSet.has("Mammalian")) {
-            neuralImpact = "ADAPTIVE: Shift in social hierarchy logic; subject may display aggressive alpha-behavior.";
-        } else {
-            neuralImpact = "NEUTRAL: Minor circadian rhythm disruption; subject requires 14 hours of REM sleep.";
-        }
+        if (comboSet.has("Arachnid")) neuralImpact = "SEVERE: Subject experiences phantom limb syndrome (8 limbs) and predatory hunger.";
+        else if (comboSet.has("Aquatic") && comboSet.has("Mammalian")) neuralImpact = "SENSORY CONFLICT: Chronic 'drowning' sensation and echo-location vertigo.";
+        else if (comboSet.has("Avian")) neuralImpact = "STABLE: Heightened spatial awareness, but acute claustrophobia.";
+        else if (comboSet.has("Mammalian")) neuralImpact = "ADAPTIVE: Shift in hierarchy logic; subject displays aggressive alpha-behavior.";
+        else neuralImpact = "NEUTRAL: Minor circadian disruption; subject requires 14h REM sleep.";
     }
 
     return {
@@ -84,19 +87,19 @@ const App = () => {
       color: isLethal ? "#FF6666" : (view === 'splicer' ? "#99EBFF" : "#EBBBFF"),
       report: {
         physical: `Combining ${g1.name}'s [${g1.feature}] with ${g2.name}'s [${g2.feature}].`,
-        secondary: `Resulting Hybrid gains [${g2.trait}] via ${g1.type} pathways.`,
-        reasoning: isLethal ? "STRAND COLLAPSE: Genetic sequences too diverse." : "STABLE SYNERGY: Cellular bonding successful.",
+        secondary: `Resulting ${isBothHuman ? 'Enhanced Human' : 'Hybrid'} gains [${g2.trait}].`,
+        reasoning: isBothHuman ? "INTRA-SPECIES HARMONY: Human strands reinforced." : (isLethal ? "STRAND COLLAPSE: Sequences too diverse." : "STABLE SYNERGY: Cellular bonding successful."),
         neural: neuralImpact
       },
       serumA: {
-        title: "TARGETED AUGMENTATION",
-        desc: `Inject into ${g1.name} to force-evolve [${g2.trait}].`,
-        steps: [`1. Distill ${g2.compound}`, `2. Mix into ${g1.name} plasma`, `3. Stabilize at pH ${phVal}`]
+        title: isBothHuman ? "NEURAL OPTIMIZATION SERUM" : "TARGETED AUGMENTATION",
+        desc: isBothHuman ? `Inject into ${g1.name} to maximize [${g2.trait}] potential.` : `Inject into ${g1.name} to force-evolve [${g2.trait}].`,
+        steps: [`1. Distill ${g2.compound}`, `2. Purify via ${isBothHuman ? 'Bio-Filter' : 'Cross-Membrane'}`, `3. Balance to pH ${phVal}`]
       },
       serumB: {
-        title: "HUMAN CHIMERA SERUM",
-        desc: `Allows Human to manifest ${g1.feature} and ${g2.trait}.`,
-        steps: [`1. Fuse ${g1.compound} & ${g2.compound}`, `2. Neutralize ${toxVal}% toxicity`, `3. Spinal injection`]
+        title: isBothHuman ? "ELITE HUMAN SYNC SERUM" : "HUMAN CHIMERA SERUM",
+        desc: isBothHuman ? `Allows a baseline Human to sync [${g1.feature}] and [${g2.trait}] without DNA alteration.` : `Allows Human to manifest ${g1.feature} and ${g2.trait}.`,
+        steps: [`1. Combine ${g1.compound} & ${g2.compound}`, `2. Stabilize ${isBothHuman ? 'Neuro-links' : 'Mutagenic agents'}`, `3. Spinal injection`]
       }
     };
   };
