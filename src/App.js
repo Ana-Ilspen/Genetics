@@ -11,7 +11,6 @@ const App = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    // Divided naming pools to prevent "Medic Wolf" scenarios
     const animalRegions = [
       "Arctic", "Tundra", "Desert", "Amazon", "Mountain", "Coastal", "Volcanic", "Subterranean", "Savanna", "Highland",
       "Glacial", "Tropical", "Steppe", "Canyon", "Abyssal", "Boreal", "Plateau", "Delta", "Marsh", "Crag",
@@ -19,15 +18,6 @@ const App = () => {
       "Feral", "Ancient", "Primal", "Apex", "Alpha", "Omega", "Prime", "Void", "Neon", "Cyber",
       "Redwood", "Everglade", "Badlands", "Tidal", "Coral", "Frost", "Dune", "Taiga", "Gully", "Summit",
       "Magma", "Cavern", "Prairie", "Oasis", "Misty", "Wild", "Great", "Deep", "North", "South"
-    ];
-
-    const humanRoles = [
-      "Survivalist", "Athlete", "Medic", "Engineer", "Scholar", "Soldier", "Pilot", "Scout", "Stuntman", "Nomad",
-      "Elite", "Rogue", "Veteran", "Novice", "Expert", "Commander", "Technician", "Specialist", "Agent", "Guard",
-      "Officer", "Researcher", "Mercenary", "Hacker", "Operative", "Diplomat", "Citizen", "Outcast", "Leader", "Bounty-Hunter",
-      "Detective", "Tactician", "Mechanic", "Scientist", "Protector", "Pathfinder", "Vanguard", "Sentry", "Warden", "Analyst",
-      "Gladiator", "Pilot", "Trainer", "Splicer", "Tracker", "Miner", "Chef", "Farmer", "Architect", "Artist",
-      "Monk", "Hermit", "Cleric", "Judge", "Rebel", "Zealot", "Squire", "Knight", "Ranger", "Oracle"
     ];
     
     const baseSpecies = [
@@ -46,19 +36,25 @@ const App = () => {
     const tempInventory = [];
     let count = 0;
 
-    // Loop through 60 variations per species
     for (let i = 0; i < 60; i++) {
       baseSpecies.forEach((species) => {
         if (count < 600) {
-          // SELECT PREFIX BASED ON TYPE
-          const prefix = species.type === "Human" ? humanRoles[i] : animalRegions[i];
+          // HUMAN-SPECIFIC LABELING: Gender and Age
+          let finalName = "";
+          if (species.type === "Human") {
+            const gender = i % 2 === 0 ? "Male" : "Female";
+            const age = 18 + (i % 50); // Generates ages from 18 to 67
+            finalName = `${gender} (${age}) Human`;
+          } else {
+            finalName = `${animalRegions[i]} ${species.name}`;
+          }
           
           const feat = species.features[count % species.features.length];
           const trait = species.traits[(count + 1) % species.traits.length];
           
           tempInventory.push({
             id: `DB-${count}`,
-            name: `${prefix} ${species.name}`,
+            name: finalName,
             type: species.type,
             feature: feat,
             trait: trait,
