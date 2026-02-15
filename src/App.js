@@ -11,103 +11,101 @@ const App = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const prefixes = ["Neon", "Primal", "Void", "Solar", "Cryo", "Toxic", "Apex", "Shadow", "Alpha", "Nano", "Aether", "Cobalt", "Inferno", "Ghost", "Omega", "Titan", "Quantum", "Magma", "Plasma", "Static"];
-    
     const speciesData = {
       Mammalian: [
-        { name: "Wolf", feat: "Neural Pack-Link", trait: "Night-Vision", comp: "Lup-G", ph: 7.2, tox: 12 },
-        { name: "Tiger", feat: "Thermal Claws", trait: "Ambush Reflex", comp: "Fel-X", ph: 7.1, tox: 18 },
-        { name: "Bear", feat: "Hibernation Reserve", trait: "Crushing Force", comp: "Urs-B", ph: 7.3, tox: 15 },
-        { name: "Elephant", feat: "Infrasonic Pulse", trait: "Trunk Dexterity", comp: "Pach-A", ph: 7.4, tox: 8 },
-        { name: "Bat", feat: "Echolocation Node", trait: "Patagium Flight", comp: "Chir-V", ph: 6.9, tox: 22 },
-        { name: "Rhino", feat: "Keratin Plate", trait: "Kinetic Charge", comp: "Cera-T", ph: 7.5, tox: 10 },
-        { name: "Cheetah", feat: "Adrenal Spurt", trait: "Non-Retract Traction", comp: "Acin-S", ph: 7.0, tox: 25 },
-        { name: "Platypus", feat: "Electro-Sensor Bill", trait: "Venomous Spur", comp: "Orni-M", ph: 6.8, tox: 45 },
-        { name: "Gorilla", feat: "Sagittal Crest", trait: "Brachiation Strength", comp: "Homin-G", ph: 7.3, tox: 5 },
-        { name: "Sloth", feat: "Low-Metabolic Flux", trait: "Syndactyly Grip", comp: "Brad-Y", ph: 6.5, tox: 2 }
+        { name: "Tundra Wolf", feat: "Insulated Fur", trait: "Pack Coordination", comp: "Lup-T", ph: 7.2, tox: 10 },
+        { name: "Red Fox", feat: "Bushy Rudder", trait: "Pounce Accuracy", comp: "Vul-R", ph: 7.1, tox: 12 },
+        { name: "Fennec Fox", feat: "Radiator Ears", trait: "Sand Burrowing", comp: "Vul-F", ph: 6.9, tox: 8 },
+        { name: "Siberian Tiger", feat: "Stealth Padding", trait: "Apex Power", comp: "Pan-S", ph: 7.3, tox: 18 },
+        { name: "Grizzly Bear", feat: "Fat Storage", trait: "Raw Strength", comp: "Urs-G", ph: 7.4, tox: 15 },
+        { name: "Snow Leopard", feat: "Long Tail Balance", trait: "Cliff Agility", comp: "Pan-U", ph: 7.2, tox: 14 },
+        { name: "Fruit Bat", feat: "Patagium Web", trait: "Sonar Navigation", comp: "Pte-L", ph: 7.0, tox: 5 },
+        { name: "Black Rhino", feat: "Dermal Armor", trait: "Impact Force", comp: "Dic-B", ph: 7.5, tox: 12 },
+        { name: "Mountain Gorilla", feat: "Silverback Bulk", trait: "Social Intelligence", comp: "Gor-M", ph: 7.3, tox: 6 },
+        { name: "African Elephant", feat: "Prehensile Trunk", trait: "Seismic Detection", comp: "Lox-A", ph: 7.4, tox: 9 }
       ],
       Avian: [
-        { name: "Falcon", feat: "Nictitating Membrane", trait: "Dive-Speed", comp: "Fal-9", ph: 7.5, tox: 10 },
-        { name: "Owl", feat: "Silent Feathers", trait: "270° Rotation", comp: "Stri-Z", ph: 7.4, tox: 12 },
-        { name: "Eagle", feat: "Retinal Zoom", trait: "High-Alt Lungs", comp: "Acci-K", ph: 7.6, tox: 11 },
-        { name: "Raven", feat: "Logic Synapse", trait: "Vocal Mimicry", comp: "Corv-X", ph: 7.2, tox: 14 },
-        { name: "Hummingbird", feat: "Torpor Mechanism", trait: "Hover-Stabilization", comp: "Troch-H", ph: 7.8, tox: 30 },
-        { name: "Vulture", feat: "Corrosive Gastric", trait: "Immune Shield", comp: "Cath-M", ph: 1.2, tox: 55 },
-        { name: "Woodpecker", feat: "Shock-Absorb Skull", trait: "Barbed Tongue", comp: "Pici-D", ph: 7.4, tox: 4 },
-        { name: "Albatross", feat: "Dynamic Soaring", trait: "Desalination Gland", comp: "Diom-E", ph: 8.1, tox: 7 },
-        { name: "Parrot", feat: "Psittacine Beak", trait: "Zygodactyl Feet", comp: "Psit-B", ph: 7.3, tox: 3 },
-        { name: "Swan", feat: "Syrinx Modulation", trait: "Aquatic Down", comp: "Cygn-U", ph: 7.5, tox: 2 }
+        { name: "Peregrine Falcon", feat: "Aero-Keel", trait: "Terminal Velocity", comp: "Fal-P", ph: 7.5, tox: 10 },
+        { name: "Great Horned Owl", feat: "Serrated Wing", trait: "Silent Strike", comp: "Bub-V", ph: 7.4, tox: 15 },
+        { name: "Golden Eagle", feat: "Talon Grip", trait: "Telescopic Vision", comp: "Aqu-C", ph: 7.6, tox: 12 },
+        { name: "Common Raven", feat: "Problem Solving", trait: "Mimicry Engine", comp: "Cor-C", ph: 7.2, tox: 11 },
+        { name: "Harpy Eagle", feat: "Crushing Feet", trait: "Canopy Hunting", comp: "Har-H", ph: 7.5, tox: 20 },
+        { name: "Ruby Hummingbird", feat: "Rapid Metabolism", trait: "Air Hover", comp: "Arc-C", ph: 7.8, tox: 5 },
+        { name: "Emperor Penguin", feat: "Blubber Layer", trait: "Deep Swimmer", comp: "Apt-F", ph: 7.7, tox: 4 },
+        { name: "Bearded Vulture", feat: "Acidic Gut", trait: "Bone Digestion", comp: "Gyp-B", ph: 1.0, tox: 40 },
+        { name: "Scarlet Macaw", feat: "Zygodactyl Grip", trait: "Seed Cracker", comp: "Ara-M", ph: 7.3, tox: 6 },
+        { name: "Osprey", feat: "Reversible Toe", trait: "Fish Snatcher", comp: "Pan-H", ph: 7.4, tox: 8 }
       ],
       Botanical: [
-        { name: "Lotus", feat: "Hydrophobic Layer", trait: "Nutrient Siphon", comp: "Nym-L", ph: 5.5, tox: 5 },
-        { name: "Cactus", feat: "Water Storage", trait: "Needle Defense", comp: "Cac-S", ph: 4.8, tox: 22 },
-        { name: "Orchid", feat: "Pheromone Mimicry", trait: "Aerial Rooting", comp: "Orc-D", ph: 5.2, tox: 14 },
-        { name: "Flytrap", feat: "Trigger-Hair Snap", trait: "Digestive Fluid", comp: "Dion-F", ph: 3.5, tox: 60 },
-        { name: "Redwood", feat: "Tannin Armor", trait: "Vertical Osmosis", comp: "Seq-H", ph: 5.8, tox: 10 },
-        { name: "Bamboo", feat: "Rhizome Expansion", trait: "Tensile Lignin", comp: "Bamb-O", ph: 6.2, tox: 4 },
-        { name: "Sundew", feat: "Mucilage Gland", trait: "Stalk Movement", comp: "Dros-E", ph: 4.0, tox: 45 },
-        { name: "Pitcher", feat: "Slippery Peristome", trait: "Enzymatic Pool", comp: "Nepe-N", ph: 2.8, tox: 70 },
-        { name: "Fern", feat: "Spore Proliferation", trait: "Frond Resilience", comp: "Pter-I", ph: 6.0, tox: 2 },
-        { name: "Rose", feat: "Prickle Defense", trait: "Anthocyanin Pigment", comp: "Rosa-P", ph: 5.4, tox: 15 }
+        { name: "Venus Flytrap", feat: "Snap Trap", trait: "Enzyme Secretion", comp: "Dio-M", ph: 3.5, tox: 55 },
+        { name: "Giant Redwood", feat: "Fireproof Bark", trait: "Hydraulic Lift", comp: "Seq-G", ph: 5.5, tox: 5 },
+        { name: "Blue Lotus", feat: "Floating Pad", trait: "Silt Filtration", comp: "Nym-C", ph: 6.0, tox: 10 },
+        { name: "Saguaro Cactus", feat: "Ribbed Trunk", trait: "Spine Defense", comp: "Car-G", ph: 5.0, tox: 25 },
+        { name: "Ghost Orchid", feat: "Chlorophyll Root", trait: "Host Symbiosis", comp: "Den-L", ph: 5.2, tox: 15 },
+        { name: "Corpse Flower", feat: "Heat Generation", trait: "Carrion Mimic", comp: "Amor-T", ph: 4.5, tox: 70 },
+        { name: "Moso Bamboo", feat: "Hardened Culm", trait: "Rapid Expansion", comp: "Phy-E", ph: 6.2, tox: 4 },
+        { name: "Silver Fern", feat: "Reflective Frond", trait: "Spore Burst", comp: "Cya-D", ph: 6.0, tox: 2 },
+        { name: "Pitcher Plant", feat: "Slip Zone", trait: "Nutrient Pit", comp: "Nep-A", ph: 2.5, tox: 65 },
+        { name: "Black Rose", feat: "Lignin Thorn", trait: "Petal Velour", comp: "Ros-B", ph: 5.8, tox: 20 }
       ],
       Aquatic: [
-        { name: "Shark", feat: "Electro-Receptors", trait: "Cartilage Growth", comp: "Sel-8", ph: 8.2, tox: 14 },
-        { name: "Axolotl", feat: "Blastema Regen", trait: "Neotenic State", comp: "Amb-Q", ph: 7.9, tox: 5 },
-        { name: "Eel", feat: "Electric Organ", trait: "Mucus Defense", comp: "Ang-E", ph: 8.0, tox: 28 },
-        { name: "Octopus", feat: "Chromatophore Skin", trait: "Multi-Brain Node", comp: "Octo-P", ph: 7.8, tox: 35 },
-        { name: "Whale", feat: "Baleen Filter", trait: "Pressure Resistance", comp: "Bala-E", ph: 7.6, tox: 8 },
-        { name: "Jellyfish", feat: "Nematocyst barb", trait: "Mesoglea Body", comp: "Cnid-J", ph: 8.4, tox: 90 },
-        { name: "Salmon", feat: "Olfactory Mapping", trait: "Upstream Stamina", comp: "Onco-R", ph: 7.7, tox: 4 },
-        { name: "Crab", feat: "Chitinous Carapace", trait: "Autotomy Limb", comp: "Deca-C", ph: 8.1, tox: 20 },
-        { name: "Puffer", feat: "Tetrodotoxin Gland", trait: "Elastic Dermal", comp: "Tetro-X", ph: 7.9, tox: 120 },
-        { name: "Seahorse", feat: "Prehensile Tail", trait: "Camouflage Plate", comp: "Hipp-O", ph: 8.0, tox: 2 }
+        { name: "Great White Shark", feat: "Ampullae Sense", trait: "Cartilage Drive", comp: "Car-C", ph: 8.0, tox: 15 },
+        { name: "Giant Octopus", feat: "Distributed Brain", trait: "Camouflage Dye", comp: "Ent-D", ph: 7.8, tox: 30 },
+        { name: "Electric Eel", feat: "Electrocyte Stack", trait: "Voltage Burst", comp: "Ele-E", ph: 7.9, tox: 45 },
+        { name: "Blue Whale", feat: "Filter Baleen", trait: "Sonic Song", comp: "Bal-M", ph: 7.6, tox: 5 },
+        { name: "Box Jellyfish", feat: "Nematocyst Harpoon", trait: "Venom Chain", comp: "Chi-F", ph: 8.2, tox: 110 },
+        { name: "Axolotl", feat: "Blastema Regen", trait: "Larval Stasis", comp: "Amb-M", ph: 7.7, tox: 3 },
+        { name: "Bull Shark", feat: "Salt Regulation", trait: "Freshwater Adapt", comp: "Car-L", ph: 8.1, tox: 25 },
+        { name: "Mantis Shrimp", feat: "Impact Strike", trait: "Trifocal Vision", comp: "Odon-S", ph: 8.0, tox: 18 },
+        { name: "Lionfish", feat: "Neurotoxin Spine", trait: "Fan Flare", comp: "Pte-V", ph: 7.9, tox: 80 },
+        { name: "Anglerfish", feat: "Biolume Esca", trait: "Lure Mimic", comp: "Mel-J", ph: 7.5, tox: 35 }
       ],
       Arachnid: [
-        { name: "BlackWidow", feat: "Neurotoxin Gland", trait: "Silk Reservoir", comp: "Lat-W", ph: 6.5, tox: 75 },
-        { name: "Scorpion", feat: "Segmented Stinger", trait: "UV Exoskeleton", comp: "Sco-V", ph: 6.2, tox: 68 },
-        { name: "OrbWeaver", feat: "Web Architecture", trait: "Tensile Strength", comp: "Aran-O", ph: 6.8, tox: 40 },
-        { name: "Tarantula", feat: "Urticating Hairs", trait: "Vibratory Sense", comp: "Thera-P", ph: 6.6, tox: 30 },
-        { name: "Mite", feat: "Micro-Parasitism", trait: "Rapid Reproduction", comp: "Acar-I", ph: 6.4, tox: 15 },
-        { name: "Harvester", feat: "Odoriferous Gland", trait: "Autotomic Legs", comp: "Opil-I", ph: 6.7, tox: 5 },
-        { name: "FunnelWeb", feat: "Atracotoxin Node", trait: "Aggression Drive", comp: "Atrax-F", ph: 6.1, tox: 95 },
-        { name: "JumpingSpider", feat: "Hydraulic Limbs", trait: "360° Visual", comp: "Salt-I", ph: 6.9, tox: 25 },
-        { name: "WaterSpider", feat: "Diving Bell Silk", trait: "Hydrostatic Breath", comp: "Argy-R", ph: 7.1, tox: 10 },
-        { name: "Ticks", feat: "Anticoagulant Spit", trait: "Sensory Haller's", comp: "Ixod-E", ph: 6.5, tox: 40 }
+        { name: "Black Widow", feat: "Latrodectus Gland", trait: "Neurotoxic Silk", comp: "Lat-M", ph: 6.2, tox: 85 },
+        { name: "Emperor Scorpion", feat: "Pincer Strength", trait: "Telson Stinger", comp: "Pan-I", ph: 6.4, tox: 70 },
+        { name: "Goliath Spider", feat: "Urticating Hairs", trait: "Fang Force", comp: "The-B", ph: 6.6, tox: 40 },
+        { name: "Sydney Funnelweb", feat: "Aggression Drive", trait: "Atracotoxin", comp: "Atra-R", ph: 6.1, tox: 100 },
+        { name: "Brown Recluse", feat: "Necrotic Enzyme", trait: "Flat Profile", comp: "Lox-R", ph: 6.3, tox: 75 },
+        { name: "Jumping Spider", feat: "Hydraulic Jump", trait: "Precision Sight", comp: "Phid-A", ph: 6.8, tox: 10 },
+        { name: "Water Spider", feat: "Air Bubble Tank", trait: "Hydro Silk", comp: "Arg-A", ph: 7.0, tox: 15 },
+        { name: "Camel Spider", feat: "Dual Chelicerae", trait: "Desert Speed", comp: "Sol-I", ph: 6.7, tox: 25 },
+        { name: "Wolf Spider", feat: "Active Hunter", trait: "Ground Sense", comp: "Lyco-H", ph: 6.9, tox: 20 },
+        { name: "Harvestman", feat: "Leg Autotomy", trait: "Odor Defense", comp: "Leio-P", ph: 7.1, tox: 5 }
       ],
       Human: [
-        { name: "Cybernetic", feat: "Titanium Graft", trait: "HUD Overlay", comp: "Cyb-1", ph: 7.0, tox: 40 },
-        { name: "Oracle", feat: "Temporal Synapse", trait: "Theta Waves", comp: "Psi-9", ph: 7.6, tox: 55 },
-        { name: "Sapiens", feat: "Logic Engine", trait: "Tool Use", comp: "Hom-S", ph: 7.4, tox: 25 },
-        { name: "Nomad", feat: "Thermal Regulation", trait: "Stamina Buffer", comp: "Vaga-M", ph: 7.3, tox: 30 },
-        { name: "Elite", feat: "Hyper-Reflex Node", trait: "Tactical Logic", comp: "Ares-E", ph: 7.5, tox: 45 },
-        { name: "Medic", feat: "Hemostat Synthesis", trait: "Cellular Repair", comp: "Vit-A", ph: 7.2, tox: 10 },
-        { name: "Engineer", feat: "Spatial Intuition", trait: "Fine Motor", comp: "Fab-R", ph: 7.4, tox: 15 },
-        { name: "Pilot", feat: "Vestibular Balance", trait: "G-Force Tolerance", comp: "Aero-N", ph: 7.3, tox: 20 },
-        { name: "Scholar", feat: "Eidetic Storage", trait: "Neural Plasticity", comp: "Logos-P", ph: 7.5, tox: 5 },
-        { name: "Rebel", feat: "Pain Suppression", trait: "Adrenaline Spike", comp: "Riot-X", ph: 7.1, tox: 65 }
+        { name: "Human Sapiens", feat: "Cognitive Flex", trait: "Tool Building", comp: "Hom-S", ph: 7.4, tox: 20 },
+        { name: "Human Nomad", feat: "Persistence Run", trait: "Heat Exhaustion", comp: "Hom-N", ph: 7.3, tox: 25 },
+        { name: "Human Oracle", feat: "Neural Synapse", trait: "Insight Engine", comp: "Hom-O", ph: 7.6, tox: 50 },
+        { name: "Human Elite", feat: "Reflex Trigger", trait: "Tactical Logic", comp: "Hom-E", ph: 7.5, tox: 40 },
+        { name: "Human Rebel", feat: "Pain Tolerance", trait: "Adrenaline Spike", comp: "Hom-R", ph: 7.1, tox: 60 },
+        { name: "Human Scholar", feat: "Memory Storage", trait: "Data Analysis", comp: "Hom-K", ph: 7.4, tox: 10 },
+        { name: "Human Medic", feat: "Cell Repair", trait: "Biological Knowledge", comp: "Hom-M", ph: 7.2, tox: 15 },
+        { name: "Human Pilot", feat: "Vestibular Sense", trait: "G-Tolerance", comp: "Hom-P", ph: 7.3, tox: 30 },
+        { name: "Human Engineer", feat: "Spatial Geometry", trait: "Precision Craft", comp: "Hom-F", ph: 7.4, tox: 18 },
+        { name: "Human Guard", feat: "Alertness State", trait: "Defensive Stance", comp: "Hom-G", ph: 7.5, tox: 35 }
       ]
     };
 
     const kingdoms = Object.keys(speciesData);
     const tempInventory = [];
 
+    // Fills 600 unique slots by cycling through the 60 specific species
     for (let i = 0; i < 600; i++) {
-      const kingdomType = kingdoms[i % 6];
-      const speciesList = speciesData[kingdomType];
-      const species = speciesList[Math.floor((i / 6) % speciesList.length)];
-      const prefix = prefixes[i % prefixes.length];
+      const kType = kingdoms[i % kingdoms.length];
+      const sList = speciesData[kType];
+      const species = sList[Math.floor((i / 6) % sList.length)];
 
       tempInventory.push({
-        id: `GEN-${i}`,
-        name: `${prefix} ${species.name}`,
-        type: kingdomType,
+        id: `SAMPLE-${i.toString().padStart(3, '0')}`,
+        name: species.name,
+        type: kType,
         feature: species.feat,
         trait: species.trait,
         compound: species.comp,
         basePh: species.ph,
         baseTox: species.tox,
-        color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF", Arachnid: "#E066FF" }[kingdomType],
-        icon: { Mammalian: "🐺", Avian: "🦅", Botanical: "🌿", Aquatic: "🦈", Human: "👤", Arachnid: "🕷️" }[kingdomType]
+        color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF", Arachnid: "#E066FF" }[kType],
+        icon: { Mammalian: "🐺", Avian: "🦅", Botanical: "🌿", Aquatic: "🦈", Human: "👤", Arachnid: "🕷️" }[kType]
       });
     }
     setInventory(tempInventory);
@@ -119,7 +117,6 @@ const App = () => {
     let stability = (g1.type === g2.type) ? 98 : 70;
     if (combo.includes("Human") || combo.includes("Arachnid")) stability -= 25;
     if (combo.includes("Botanical") && !combo.includes("Botanical+Botanical")) stability -= 35;
-
     const toxVal = (g1.baseTox + g2.baseTox + (g1.type === g2.type ? 0 : 20));
     const phVal = ((g1.basePh + g2.basePh) / 2).toFixed(1);
     const isLethal = stability < 45 || toxVal > 150;
@@ -128,40 +125,19 @@ const App = () => {
       isLethal, stability, toxicity: `${toxVal}%`, ph: phVal,
       color: isLethal ? "#FF6666" : (view === 'splicer' ? "#99EBFF" : "#EBBBFF"),
       report: {
-        physical: `Primary Bio-Structure: ${g1.feature} (Source: ${g1.name})`,
-        secondary: `Secondary Ability: ${g2.trait} (Source: ${g2.name})`,
-        reasoning: isLethal ? `FAILURE: Strands from ${g1.type} rejected ${g2.type} sequences.` : `SUCCESS: ${stability}% genomic match.`
+        physical: `Primary Structure: ${g1.feature} (from ${g1.name})`,
+        secondary: `Secondary Trait: ${g2.trait} (from ${g2.name})`
       },
       serumSteps: [
-        `Step 1: Centrifuge ${g1.compound} isolate from ${g1.name}.`,
-        `Step 2: Titrate ${g2.compound} catalytic agent into solution.`,
-        `Step 3: Stabilize mixture to target pH ${phVal} with buffer.`,
-        `Step 4: Incubate at 37°C to finalize bonding.`
+        `1. Centrifuge ${g1.compound} from ${g1.name}.`,
+        `2. Mix with ${g2.compound} from ${g2.name}.`,
+        `3. Adjust to pH ${phVal}.`,
+        `4. Heat to 37°C for bonding.`
       ]
     };
   };
 
   const res = getAnalysis(slotA, slotB);
-
-  const archiveResult = () => {
-    if (!hybridName) return alert("NAME REQUIRED");
-    const newEntry = { ...slotA, id: Date.now(), name: hybridName.toUpperCase(), isHybrid: true, color: res.color, reportData: res, mode: view, sourceA: slotA.name, sourceB: slotB.name };
-    setInventory([newEntry, ...inventory]);
-    setSlotA(null); setSlotB(null); setHybridName("");
-  };
-
-  const downloadReport = (g) => {
-    let content = `LAB DATA: ${g.name}\nTYPE: ${g.mode === 'splicer' ? 'ORGANISM' : 'SERUM'}\nORIGIN: ${g.sourceA} + ${g.sourceB}\n----------------\n`;
-    if (g.mode === 'splicer') {
-      content += `MORPHOLOGY:\n- ${g.reportData.report.physical}\n- ${g.reportData.report.secondary}\nSTABILITY: ${g.reportData.stability}%`;
-    } else {
-      content += `PROPERTIES:\npH: ${g.reportData.ph}\nTOX: ${g.reportData.toxicity}\n\nSYNTHESIS:\n${g.reportData.serumSteps.join('\n')}`;
-    }
-    const element = document.createElement("a");
-    element.href = URL.createObjectURL(new Blob([content], {type: 'text/plain'}));
-    element.download = `${g.name}_DATA.txt`;
-    element.click();
-  };
 
   return (
     <div onMouseMove={(e) => setMousePos({ x: e.clientX + 20, y: e.clientY + 20 })} 
@@ -181,20 +157,24 @@ const App = () => {
                   style={{ width: '100%', padding: '14px', background: view === 'serum' ? '#EBBBFF' : '#99EBFF', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '10px' }}>
             {view === 'splicer' ? '🧪 GO TO SERUM LAB' : '🧬 GO TO SPLICER'}
           </button>
-          <input type="text" placeholder="FILTER 600+ SAMPLES..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
+          <input type="text" placeholder="SEARCH SAMPLES..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
                  style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #333', color: '#FFF' }} />
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
-          {inventory.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()) || g.type.toLowerCase().includes(searchTerm.toLowerCase())).map(g => (
+          {inventory.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase())).map(g => (
             <div key={g.id} onMouseEnter={() => setHoveredGene(g)} onMouseLeave={() => setHoveredGene(null)} draggable onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(g))} 
                  style={{ padding: '12px', margin: '8px 0', background: '#111', borderLeft: `5px solid ${g.color}`, cursor: 'grab', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>{g.icon} {g.name}</span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {g.isHybrid && (
                   <>
-                    <button onClick={() => downloadReport(g)} style={{ color: '#99EBFF', background: 'none', border: 'none', cursor: 'pointer' }}>DOC</button>
-                    <button onClick={() => setInventory(inventory.filter(i => i.id !== g.id))} style={{ color: '#FF6666', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
+                    <button onClick={() => {
+                      const content = `DATA: ${g.name}\nSTRUCT: ${g.reportData.report.physical}\nSYNTHESIS:\n${g.reportData.serumSteps.join('\n')}`;
+                      const blob = new Blob([content], {type: 'text/plain'});
+                      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${g.name}.txt`; link.click();
+                    }} style={{ color: '#99EBFF', background: 'none', border: 'none', cursor: 'pointer' }}>DOC</button>
+                    <button onClick={() => setInventory(inventory.filter(i => i.id !== g.id))} style={{ color: '#FF6666', background: 'none', border: 'none', cursor: 'pointer' }}>X</button>
                   </>
                 )}
               </div>
@@ -226,7 +206,6 @@ const App = () => {
                 <div style={{ marginBottom: '15px', padding: '10px', background: '#000', border: '1px solid #222' }}>STABILITY: <span style={{color: res.stability < 50 ? '#ff4444' : '#00ff00'}}>{res.stability}%</span></div>
                 <p>🧬 {res.report.physical}</p>
                 <p>🧬 {res.report.secondary}</p>
-                <p style={{ color: res.color, fontWeight: 'bold' }}>{res.report.reasoning}</p>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
@@ -242,9 +221,13 @@ const App = () => {
             )}
             {!res.isLethal && (
               <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
-                <input placeholder="NAME CREATION..." value={hybridName} onChange={(e) => setHybridName(e.target.value)} 
+                <input placeholder="HYBRID NAME..." value={hybridName} onChange={(e) => setHybridName(e.target.value)} 
                        style={{ background: '#000', color: '#FFF', border: '1px solid #444', padding: '15px', flex: 1 }} />
-                <button onClick={archiveResult} style={{ background: res.color, color: '#000', border: 'none', padding: '0 25px', fontWeight: 'bold', cursor: 'pointer' }}>SAVE</button>
+                <button onClick={() => {
+                  const newEntry = { ...slotA, id: Date.now(), name: hybridName.toUpperCase(), isHybrid: true, color: res.color, reportData: res, mode: view };
+                  setInventory([newEntry, ...inventory]);
+                  setSlotA(null); setSlotB(null); setHybridName("");
+                }} style={{ background: res.color, color: '#000', border: 'none', padding: '0 25px', fontWeight: 'bold', cursor: 'pointer' }}>SAVE</button>
               </div>
             )}
           </div>
