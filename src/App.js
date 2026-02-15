@@ -1,23 +1,17 @@
 import React, { useState } from 'react';
-
 const App = () => {
   const [slotA, setSlotA] = useState(null);
   const [slotB, setSlotB] = useState(null);
-
-  // --- DATA GENERATOR: 500 Unique Names & Traits ---
   const allGenes = Array.from({ length: 500 }, (_, i) => {
     const prefixes = ["Glacial", "Volcanic", "Apex", "Shadow", "Neon", "Primal", "Cyber", "Ethereal", "Storm", "Deep-Sea"];
     const mammals = ["Lion", "Wolf", "Bear", "Rhino", "Stallion"];
     const avians = ["Falcon", "Owl", "Raven", "Eagle", "Vulture"];
     const botany = ["Oak", "Fern", "Lotus", "Ivy", "Willow"];
     const aquatic = ["Shark", "Kraken", "Manta", "Eel", "Orca"];
-
-    const id = `GENE-${String(i + 1).padStart(3, '0')}`;
+ const id = `GENE-${String(i + 1).padStart(3, '0')}`;
     let type, name, trait, icon;
-
-    const pre = prefixes[i % prefixes.length];
-
-    if (i < 125) {
+ const pre = prefixes[i % prefixes.length];
+ if (i < 125) {
       type = "Mammalian";
       name = `${pre} ${mammals[i % mammals.length]}`;
       trait = "Advanced Limb Musculature";
@@ -38,24 +32,18 @@ const App = () => {
       trait = "Hydrostatic Gilled Respiration";
       icon = "🦈";
     }
-
-    return { id, name, type, trait, icon };
+ return { id, name, type, trait, icon };
   });
-
-  const getAnalysis = (g1, g2) => {
+ const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
-
-    const isMatch = g1.type === g2.type;
+ const isMatch = g1.type === g2.type;
     const comboKey = [g1.type, g2.type].sort().join('+');
-
-    let result = {
+let result = {
       status: "STABLE HYBRID",
       color: "#00d4ff",
       reason: "Molecular structures aligned.",
       inheritance: []
     };
-
-    // Detailed Compatibility Logic
     if (isMatch) {
       result.status = "OPTIMAL SYNERGY";
       result.color = "#00ff88";
@@ -88,13 +76,10 @@ const App = () => {
     }
     return result;
   };
-
   const analysis = getAnalysis(slotA, slotB);
-
   return (
     <div style={{ display: 'flex', height: '100vh', backgroundColor: '#050505', color: '#ccc', fontFamily: 'monospace' }}>
-      
-      {/* SIDEBAR */}
+            {/* SIDEBAR */}
       <div style={{ width: '320px', borderRight: '1px solid #222', overflowY: 'auto', padding: '15px', background: '#0a0a0a' }}>
         <h3 style={{ color: '#00d4ff', borderBottom: '1px solid #333', paddingBottom: '10px' }}>GENETIC INVENTORY</h3>
         {allGenes.map(gene => (
@@ -111,8 +96,7 @@ const App = () => {
           </div>
         ))}
       </div>
-
-      {/* WORKSPACE */}
+{/* WORKSPACE */}
       <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <h1 style={{ letterSpacing: '5px', color: '#fff' }}>GENE PLAYGROUND</h1>
         
@@ -140,7 +124,6 @@ const App = () => {
             </div>
           ))}
         </div>
-
         {/* DETAILED RESULTS */}
         {analysis && (
           <div style={{ width: '100%', maxWidth: '800px', padding: '30px', background: '#111', border: `1px solid ${analysis.color}`, position: 'relative' }}>
@@ -162,5 +145,4 @@ const App = () => {
     </div>
   );
 };
-
 export default App;
