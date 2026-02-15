@@ -27,25 +27,40 @@ const App = () => {
       const animal = animalList[Math.floor((i / 5) % animalList.length)];
       const prefix = prefixes[Math.floor((i / 50) % prefixes.length)];
       
-      const traits = {
+      // NEW: Dynamic Trait Mapping for Humans & Others
+      const traitLibrary = {
         Mammalian: { feat: "Dense Muscular Fibers", trait: "Adrenaline Response", comp: "Mammal-Beta", ph: 7.2, tox: 12 },
         Avian: { feat: "Hollow Bone Architecture", trait: "Enhanced Optics", comp: "Avian-C", ph: 7.5, tox: 8 },
         Botanical: { feat: "Chlorophyll Dermal Layer", trait: "Cellular Regen", comp: "Phyto-K", ph: 5.2, tox: 15 },
         Aquatic: { feat: "Gilled Filtration", trait: "Pressure Resistance", comp: "Aqua-Lipid", ph: 8.1, tox: 10 },
-        Human: { feat: "Neural Cortex", trait: "Motor Control", comp: "Cerebro-V", ph: 7.4, tox: 40 }
+        // Human Sub-Types
+        Human_Sapiens: { feat: "Advanced Frontal Lobe", trait: "Fine Motor Control", comp: "Cerebro-V", ph: 7.4, tox: 35 },
+        Human_Cybernetic: { feat: "Sub-Dermal Neural Mesh", trait: "Digital Interfacing", comp: "Nano-Logic", ph: 7.0, tox: 45 },
+        Human_Oracle: { feat: "Pre-Cognitive Synapse", trait: "Hyper-Focus State", comp: "Psionic-X", ph: 7.6, tox: 50 },
+        Human_Ancient: { feat: "Ancestral Bone Density", trait: "Endurance Hardening", comp: "Origin-G", ph: 7.3, tox: 30 },
+        Human_Augmented: { feat: "Ocular HUD Integration", trait: "Tactical Processing", comp: "Optic-N", ph: 7.1, tox: 42 }
       };
+
+      // Determine which human trait to use
+      let traitKey = type;
+      if (type === "Human") {
+        const humanType = animal; // Uses "Sapiens", "Cybernetic", etc.
+        traitKey = traitLibrary[`Human_${humanType}`] ? `Human_${humanType}` : "Human_Sapiens";
+      }
+
+      const activeTrait = traitLibrary[traitKey] || traitLibrary[type];
 
       return {
         id: `G-${String(i + 1).padStart(3, '0')}`,
         name: `${prefix} ${animal}`,
         type,
-        trait: traits[type].trait,
-        feature: traits[type].feat,
+        trait: activeTrait.trait,
+        feature: activeTrait.feat,
         icon: { Mammalian: "🐺", Avian: "🦅", Botanical: "🌿", Aquatic: "🦈", Human: "👤" }[type],
         color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF" }[type],
-        compound: traits[type].comp,
-        basePh: traits[type].ph,
-        baseTox: traits[type].tox,
+        compound: activeTrait.comp,
+        basePh: activeTrait.ph,
+        baseTox: activeTrait.tox,
         isHybrid: false
       };
     });
@@ -55,17 +70,14 @@ const App = () => {
   const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
     const combo = [g1.type, g2.type].sort().join('+');
-    
-    // Logic for failure
     const isLethal = (combo.includes("Botanical") && !combo.includes("Botanical+Botanical")) || (combo.includes("Human") && combo.includes("Botanical"));
     const failReason = (combo.includes("Human") && combo.includes("Botanical")) 
         ? "Cytotoxic Shock: Human neural tissue rejected botanical alkaloids." 
-        : "Molecular Incompatibility: Cellulose cell walls cannot fuse with non-botanical protein structures.";
+        : "Molecular Incompatibility: Plant cellulose cannot fuse with animal proteins.";
 
-    // Dynamic Math for pH and Toxicity
     const avgPh = ((g1.basePh + g2.basePh) / 2).toFixed(1);
     let finalTox = (g1.baseTox + g2.baseTox);
-    if (g1.type !== g2.type) finalTox += 25; // Mutation penalty
+    if (g1.type !== g2.type) finalTox += 20;
 
     return {
       isLethal, canSave: !isLethal,
@@ -76,10 +88,10 @@ const App = () => {
         alignment: isLethal ? `CRITICAL FAILURE: ${failReason}` : "SUCCESS: Recombination complete."
       },
       serumData: { ph: avgPh, tox: `${finalTox}%`, failReason, steps: [
-        `Step 1: Extract ${g1.compound} isolate from ${g1.name} (40% volume)`,
-        `Step 2: Infuse ${g2.compound} catalytic agent from ${g2.name} (35% volume)`,
-        `Step 3: Stabilize with 20% Saline Buffer solution`,
-        `Step 4: Introduce Reactive Catalyst to bond molecules (5% volume)`
+        `1. Distill ${g1.compound} isolate from ${g1.name}`,
+        `2. Infuse ${g2.compound} agent from ${g2.name}`,
+        `3. Stabilize with Saline Buffer`,
+        `4. Apply Catalyst for molecular bonding`
       ]}
     };
   };
@@ -88,12 +100,8 @@ const App = () => {
   const clear = () => { setSlotA(null); setSlotB(null); setHybridName(""); };
 
   const downloadReport = (item) => {
-    let content = `LAB REPORT: ${item.name}\nID: ${item.id}\n--------------------------\n`;
-    if (item.mode === 'splicer') {
-      content += `TYPE: GENOMIC HYBRID\nPHYSICAL: ${item.reportData.splicerReport.physical}\nRESULT: ${item.reportData.splicerReport.alignment}`;
-    } else {
-      content += `TYPE: SYNTHETIC SERUM\npH: ${item.reportData.serumData.ph}\nTOXICITY: ${item.reportData.serumData.tox}\n\nSTEPS:\n${item.reportData.serumData.steps.join('\n')}`;
-    }
+    let content = `LAB REPORT: ${item.name}\n--------------------------\n`;
+    content += item.mode === 'splicer' ? `PHYSICAL: ${item.reportData.splicerReport.physical}` : `STEPS: ${item.reportData.serumData.steps.join(', ')}`;
     const element = document.createElement("a");
     element.href = URL.createObjectURL(new Blob([content], {type: 'text/plain'}));
     element.download = `${item.name}_Profile.txt`;
@@ -102,16 +110,9 @@ const App = () => {
 
   const archiveResult = () => {
     if (!hybridName) return alert("ENTER NAME");
-    const newEntry = {
-      ...slotA,
-      id: `${view === 'splicer' ? 'HYB' : 'SRM'}-${Math.floor(Math.random() * 9000)}`,
-      name: hybridName.toUpperCase(),
-      isHybrid: true,
-      color: res.color,
-      reportData: res,
-      mode: view
-    };
+    const newEntry = { ...slotA, id: `HYB-${Math.floor(Math.random() * 9000)}`, name: hybridName.toUpperCase(), isHybrid: true, color: res.color, reportData: res, mode: view };
     setInventory([newEntry, ...inventory]);
+    setSearchTerm(""); // Clears search on save
     clear();
   };
 
@@ -124,6 +125,7 @@ const App = () => {
         <div style={{ position: 'fixed', left: mousePos.x, top: mousePos.y, zIndex: 100, background: '#111', border: `2px solid ${hoveredGene.color}`, padding: '15px', borderRadius: '8px', pointerEvents: 'none' }}>
           <b style={{ color: hoveredGene.color }}>{hoveredGene.name}</b>
           <p style={{ fontSize: '13px', margin: '5px 0' }}>FEATURE: {hoveredGene.feature}</p>
+          <p style={{ fontSize: '12px', color: '#888' }}>TRAIT: {hoveredGene.trait}</p>
         </div>
       )}
 
@@ -134,7 +136,7 @@ const App = () => {
                   style={{ width: '100%', padding: '14px', background: view === 'serum' ? '#EBBBFF' : '#99EBFF', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '10px' }}>
             {view === 'splicer' ? '🧪 GO TO SERUM LAB' : '🧬 GO TO SPLICER'}
           </button>
-          <input type="text" placeholder="SEARCH SAMPLES OR TYPES..." onChange={(e) => setSearchTerm(e.target.value)} 
+          <input type="text" placeholder="SEARCH SAMPLES OR TYPES..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
                  style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #333', color: '#FFF' }} />
         </div>
 
@@ -156,7 +158,7 @@ const App = () => {
         </div>
       </div>
 
-      {/* WORKSPACE */}
+      {/* MAIN LAB AREA */}
       <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto' }}>
         <h1 style={{ fontSize: '36px', marginBottom: '30px' }}>{view === 'splicer' ? 'GENOME RECOMBINATOR' : 'SERUM DISTILLERY'}</h1>
         
