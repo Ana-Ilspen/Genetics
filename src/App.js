@@ -54,7 +54,9 @@ const App = () => {
       const info = bioData[type][animal];
       return {
         id: `G-${i}`, name: `${prefixes[i % 10]} ${animal}`, type,
-        ...info, color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF", Arachnid: "#E066FF" }[type],
+        feature: info.feat, trait: info.trait, compound: info.comp, 
+        basePh: info.ph, baseTox: info.tox,
+        color: { Mammalian: "#FFD699", Avian: "#99EBFF", Botanical: "#A3FFD6", Aquatic: "#99B2FF", Human: "#FFFFFF", Arachnid: "#E066FF" }[type],
         icon: { Mammalian: "🐺", Avian: "🦅", Botanical: "🌿", Aquatic: "🦈", Human: "👤", Arachnid: "🕷️" }[type]
       };
     });
@@ -65,29 +67,29 @@ const App = () => {
     if (!g1 || !g2) return null;
     const combo = [g1.type, g2.type].sort().join('+');
     
-    // GENETIC STABILITY CALCULATION
     let stability = (g1.type === g2.type) ? 98 : 70;
     if (combo.includes("Human") || combo.includes("Arachnid")) stability -= 25;
     if (combo.includes("Botanical") && !combo.includes("Botanical+Botanical")) stability -= 35;
 
-    const tox = (g1.baseTox + g2.baseTox + (g1.type === g2.type ? 0 : 20));
-    const isLethal = stability < 45 || tox > 130;
+    const toxVal = (g1.baseTox + g2.baseTox + (g1.type === g2.type ? 0 : 20));
+    const phVal = ((g1.basePh + g2.basePh) / 2).toFixed(1);
+    const isLethal = stability < 45 || toxVal > 130;
 
     return {
-      isLethal, stability, toxicity: `${tox}%`, ph: ((g1.basePh + g2.basePh) / 2).toFixed(1),
+      isLethal, stability, toxicity: `${toxVal}%`, ph: phVal,
       color: isLethal ? "#FF6666" : (view === 'splicer' ? "#99EBFF" : "#EBBBFF"),
       report: {
         physical: `Primary Bio-Structure: ${g1.feature} (Source: ${g1.name})`,
         secondary: `Secondary Ability: ${g2.trait} (Source: ${g2.name})`,
         reasoning: isLethal 
-          ? `Lethal Failure: DNA strands from ${g1.type} and ${g2.type} collapsed due to ${stability < 45 ? 'Stability Collapse' : 'Toxicity Shock'}.`
-          : `Stability Success: Recombined ${g1.compound} and ${g2.compound} using ${stability}% genomic alignment.`
+          ? `LETHAL FAILURE: Rejection between ${g1.type} and ${g2.type} genomic strands.`
+          : `STABILITY SECURED: ${stability}% match achieved using ${g1.compound} base.`
       },
       serumSteps: [
-        `1. Distill ${g1.compound} from ${g1.name}`,
-        `2. Introduce ${g2.compound} from ${g2.name}`,
-        `3. Buffer solution to pH ${((g1.basePh + g2.basePh) / 2).toFixed(1)}`,
-        `4. Synthesize final ${view === 'splicer' ? 'Hybrid' : 'Serum'}`
+        `Step 1: Centrifuge ${g1.compound} isolate from ${g1.name} specimen.`,
+        `Step 2: Titrate ${g2.compound} catalytic agent into solution.`,
+        `Step 3: Stabilize mixture to target pH ${phVal} with synthetic buffer.`,
+        `Step 4: Incubate at 37°C to finalize molecular bonding.`
       ]
     };
   };
@@ -105,12 +107,12 @@ const App = () => {
     <div onMouseMove={(e) => setMousePos({ x: e.clientX + 20, y: e.clientY + 20 })} 
          style={{ display: 'flex', height: '100vh', backgroundColor: '#000', color: '#EEE', fontFamily: 'Arial, sans-serif', overflow: 'hidden' }}>
       
-      {/* HOVER TOOLTIP */}
+      {/* TOOLTIP FIX */}
       {hoveredGene && (
         <div style={{ position: 'fixed', left: mousePos.x, top: mousePos.y, zIndex: 100, background: '#111', border: `2px solid ${hoveredGene.color}`, padding: '15px', borderRadius: '8px', pointerEvents: 'none' }}>
           <b style={{ color: hoveredGene.color, fontSize: '18px' }}>{hoveredGene.name}</b>
           <p style={{ margin: '5px 0' }}>STRUCT: {hoveredGene.feature}</p>
-          <p style={{ color: '#888' }}>TRAIT: {hoveredGene.trait}</p>
+          <p style={{ color: '#888', margin: '0' }}>TRAIT: {hoveredGene.trait}</p>
         </div>
       )}
 
@@ -121,25 +123,33 @@ const App = () => {
                   style={{ width: '100%', padding: '14px', background: view === 'serum' ? '#EBBBFF' : '#99EBFF', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '10px', fontSize: '16px' }}>
             {view === 'splicer' ? '🧪 GO TO SERUM LAB' : '🧬 GO TO SPLICER'}
           </button>
-          <input type="text" placeholder="FILTER 600+ SAMPLES..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
+          <input type="text" placeholder="FILTER SPECIMENS..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
                  style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #333', color: '#FFF' }} />
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
           {inventory.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase()) || g.type.toLowerCase().includes(searchTerm.toLowerCase())).map(g => (
             <div key={g.id} onMouseEnter={() => setHoveredGene(g)} onMouseLeave={() => setHoveredGene(null)} draggable onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(g))} 
-                 style={{ padding: '12px', margin: '8px 0', background: '#111', borderLeft: `5px solid ${g.color}`, cursor: 'grab', display: 'flex', justifyContent: 'space-between' }}>
+                 style={{ padding: '12px', margin: '8px 0', background: '#111', borderLeft: `5px solid ${g.color}`, cursor: 'grab', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>{g.icon} {g.name}</span>
-              {g.isHybrid && <button onClick={() => {
-                const blob = new Blob([`REPORT: ${g.name}\n${g.reportData.report.physical}`], {type: 'text/plain'});
-                const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${g.name}.txt`; link.click();
-              }} style={{ color: '#99EBFF', background: 'none', border: 'none', cursor: 'pointer' }}>DOC</button>}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {g.isHybrid && (
+                  <>
+                    <button onClick={() => {
+                      const content = `SPECIMEN REPORT: ${g.name}\n${g.reportData.report.physical}\n${g.reportData.report.secondary}`;
+                      const blob = new Blob([content], {type: 'text/plain'});
+                      const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${g.name}.txt`; link.click();
+                    }} style={{ color: '#99EBFF', background: 'none', border: 'none', cursor: 'pointer' }}>DOC</button>
+                    <button onClick={() => setInventory(inventory.filter(i => i.id !== g.id))} style={{ color: '#FF6666', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>X</button>
+                  </>
+                )}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* MAIN LAB */}
+      {/* WORKSPACE */}
       <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto' }}>
         <h1 style={{ fontSize: '36px', marginBottom: '30px' }}>{view === 'splicer' ? 'GENOME RECOMBINATOR' : 'SERUM DISTILLERY'}</h1>
         
@@ -156,21 +166,31 @@ const App = () => {
           <div style={{ width: '100%', maxWidth: '800px', padding: '30px', border: `2px solid ${res.color}`, background: '#0A0A0A', borderRadius: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', alignItems: 'center' }}>
               <h2 style={{ color: res.color, margin: 0 }}>{res.isLethal ? 'ANALYSIS FAILED' : 'STABLE RESULT'}</h2>
-              <button onClick={() => {setSlotA(null); setSlotB(null);}} style={{ background: '#333', color: '#FFF', border: 'none', padding: '8px 20px', cursor: 'pointer', borderRadius: '5px' }}>RESET LAB</button>
+              <button onClick={() => {setSlotA(null); setSlotB(null);}} style={{ background: '#333', color: '#FFF', border: 'none', padding: '8px 20px', cursor: 'pointer', borderRadius: '5px' }}>RESET</button>
             </div>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px', background: '#000', padding: '15px', border: '1px solid #222' }}>
-              <div>STABILITY: <span style={{color: res.stability < 50 ? '#ff4444' : '#00ff00'}}>{res.stability}%</span></div>
-              <div>TOXICITY: <span style={{color: '#ff4444'}}>{res.toxicity}</span></div>
-              <div>PH LEVEL: <span style={{color: '#99EBFF'}}>{res.ph}</span></div>
-              <div>RECOMBINATION: {res.isLethal ? 'FAILED' : 'ACTIVE'}</div>
-            </div>
-
-            <div style={{ fontSize: '18px', lineHeight: '1.6' }}>
-              <p>🧬 {res.report.physical}</p>
-              <p>🧬 {res.report.secondary}</p>
-              <p style={{ color: res.color, fontWeight: 'bold' }}>{res.report.reasoning}</p>
-            </div>
+            {/* CONDITIONAL UI PER MODE */}
+            {view === 'splicer' ? (
+              <div style={{ fontSize: '18px', lineHeight: '1.6' }}>
+                <div style={{ marginBottom: '15px', padding: '10px', background: '#000', border: '1px solid #222' }}>
+                  STABILITY: <span style={{color: res.stability < 50 ? '#ff4444' : '#00ff00'}}>{res.stability}%</span>
+                </div>
+                <p>🧬 {res.report.physical}</p>
+                <p>🧬 {res.report.secondary}</p>
+                <p style={{ color: res.color, fontWeight: 'bold' }}>{res.report.reasoning}</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+                <div style={{ background: '#000', padding: '20px', border: '1px solid #333' }}>
+                  <p style={{fontSize: '20px', margin: '0 0 10px 0'}}>pH: <span style={{color: '#99EBFF'}}>{res.ph}</span></p>
+                  <p style={{fontSize: '20px', margin: '0'}}>TOX: <span style={{color: '#ff6666'}}>{res.toxicity}</span></p>
+                </div>
+                <div style={{ fontSize: '16px' }}>
+                  <b style={{color: '#EBBBFF'}}>SYNTHESIS PROTOCOL:</b>
+                  {res.serumSteps.map((step, idx) => <p key={idx} style={{margin: '8px 0'}}>{step}</p>)}
+                </div>
+              </div>
+            )}
 
             {!res.isLethal && (
               <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
