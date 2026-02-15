@@ -1,74 +1,111 @@
 import React, { useState } from 'react';
 
-// A mapping of Gene IDs to Common Names and Descriptions
-const geneInfo = {
-  "GENE-001": { name: "Lion (Apex)", traits: "High strength, predatory instincts" },
-  "GENE-002": { name: "Eagle (Flight)", traits: "Superior vision, aerial mobility" },
-  "GENE-003": { name: "Oak (Resilience)", traits: "Slow growth, high durability" },
-  "GENE-004": { name: "Shark (Aquatic)", traits: "Electro-reception, gill breathing" },
-  "GENE-005": { name: "Spider (Silk)", traits: "Tension strength, sticky surfaces" },
-  // ... the other 495 genes will default to "Unknown Specimen"
+// --- DATA: Gene Definitions ---
+const geneLibrary = {
+  "GENE-001": { name: "Lion", type: "Mammal", traits: ["Strength", "Claws"], icon: "🦁" },
+  "GENE-002": { name: "Eagle", type: "Avian", traits: ["Flight", "Vision"], icon: "🦅" },
+  "GENE-003": { name: "Oak", type: "Plant", traits: ["Durability", "Photosynthesis"], icon: "🌳" },
+  "GENE-004": { name: "Shark", type: "Aquatic", traits: ["Gills", "Electrolocation"], icon: "🦈" },
+  "GENE-005": { name: "Spider", type: "Insect", traits: ["Webbing", "Wall-climbing"], icon: "🕷️" },
 };
 
 const App = () => {
-  const [selectedGene, setSelectedGene] = useState(null);
+  const [slotA, setSlotA] = useState(null);
+  const [slotB, setSlotB] = useState(null);
 
-  // Generate 500 genes for the list
-  const genes = Array.from({ length: 500 }, (_, i) => {
+  // Generate 500 Genes
+  const allGenes = Array.from({ length: 500 }, (_, i) => {
     const id = `GENE-${String(i + 1).padStart(3, '0')}`;
-    return {
-      id,
-      commonName: geneInfo[id]?.name || `Specimen ${id.split('-')[1]}`,
-      traits: geneInfo[id]?.traits || "Genetic sequence awaiting analysis..."
+    return geneLibrary[id] || { 
+      id, 
+      name: `Specimen ${i + 1}`, 
+      type: "Unknown", 
+      traits: ["Stable sequence"], 
+      icon: "🧪" 
     };
   });
 
+  const getCompatibility = (g1, g2) => {
+    if (!g1 || !g2) return null;
+    
+    const isPlant = g1.type === "Plant" || g2.type === "Plant";
+    const isMammal = g1.type === "Mammal" || g2.type === "Mammal";
+    
+    if (isPlant && isMammal) {
+      return {
+        status: "⚠️ UNSTABLE",
+        color: "#ff4b2b",
+        reason: "Cross-kingdom fusion (Plant/Animal) causes cellular collapse.",
+        transfer: "None (Lethal mutation)"
+      };
+    }
+
+    return {
+      status: "✅ COMPATIBLE",
+      color: "#00d4ff",
+      reason: "Taxonomic alignment successful. Neural pathways compatible.",
+      transfer: `${g1.traits[0]} + ${g2.traits[0]}`
+    };
+  };
+
+  const analysis = getCompatibility(slotA, slotB);
+
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: 'sans-serif', backgroundColor: '#121212', color: 'white' }}>
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#0f0f0f', color: '#e0e0e0', fontFamily: 'monospace' }}>
       
-      {/* Left Sidebar: The Gene List */}
-      <div style={{ width: '350px', borderRight: '1px solid #333', overflowY: 'auto', padding: '20px' }}>
-        <h2 style={{ color: '#00d4ff' }}>🧬 Genomic Bank</h2>
-        <p style={{ fontSize: '12px', color: '#888' }}>Select a sequence to analyze</p>
-        <hr style={{ borderColor: '#333' }} />
-        {genes.map((gene) => (
+      {/* 1. Sidebar (Bank) */}
+      <div style={{ width: '300px', borderRight: '2px solid #333', overflowY: 'scroll', padding: '15px' }}>
+        <h2 style={{ color: '#00d4ff' }}>GENE BANK</h2>
+        {allGenes.map(gene => (
           <div 
-            key={gene.id} 
-            onClick={() => setSelectedGene(gene)}
-            style={{
-              padding: '10px',
-              margin: '5px 0',
-              backgroundColor: selectedGene?.id === gene.id ? '#00d4ff22' : '#1e1e1e',
-              border: selectedGene?.id === gene.id ? '1px solid #00d4ff' : '1px solid #333',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
+            key={gene.id}
+            draggable
+            onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(gene))}
+            style={{ padding: '10px', margin: '5px 0', background: '#1a1a1a', border: '1px solid #444', cursor: 'grab' }}
           >
-            <strong>{gene.id}</strong> - {gene.commonName}
+            {gene.icon} {gene.id} <br/> <small>{gene.name}</small>
           </div>
         ))}
       </div>
 
-      {/* Right Side: The Info Panel */}
-      <div style={{ flex: 1, padding: '40px', backgroundColor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        {selectedGene ? (
-          <div style={{ maxWidth: '600px', width: '100%', padding: '30px', border: '1px solid #444', borderRadius: '15px', backgroundColor: '#161616' }}>
-            <h1 style={{ color: '#00d4ff', marginTop: 0 }}>{selectedGene.commonName}</h1>
-            <h4 style={{ color: '#888' }}>Sequence ID: {selectedGene.id}</h4>
-            <hr style={{ borderColor: '#333', margin: '20px 0' }} />
-            <h3>Genetic Traits:</h3>
-            <p style={{ fontSize: '18px', lineHeight: '1.6' }}>{selectedGene.traits}</p>
-            <div style={{ marginTop: '30px', padding: '15px', backgroundColor: '#00d4ff11', borderRadius: '8px', border: '1px dashed #00d4ff' }}>
-              <span style={{ color: '#00d4ff' }}>✓ Status:</span> Sequence Stable. Compatible for observation.
-            </div>
+      {/* 2. Main Lab Area */}
+      <div style={{ flex: 1, padding: '40px', textAlign: 'center' }}>
+        <h1>GENETIC COMBINER</h1>
+        
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', margin: '40px 0' }}>
+          {/* Slot A */}
+          <div 
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => setSlotA(JSON.parse(e.dataTransfer.getData("gene")))}
+            style={{ width: '150px', height: '150px', border: '2px dashed #00d4ff', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            {slotA ? <div>{slotA.icon}<br/>{slotA.name}</div> : "Drop Gene A"}
           </div>
-        ) : (
-          <div style={{ textAlign: 'center', color: '#666' }}>
-            <h2>Select a gene from the bank to view details</h2>
-            <p>Scanning 500 sequences...</p>
+
+          <div style={{ fontSize: '40px', alignSelf: 'center' }}>+</div>
+
+          {/* Slot B */}
+          <div 
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => setSlotB(JSON.parse(e.dataTransfer.getData("gene")))}
+            style={{ width: '150px', height: '150px', border: '2px dashed #00d4ff', borderRadius: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            {slotB ? <div>{slotB.icon}<br/>{slotB.name}</div> : "Drop Gene B"}
+          </div>
+        </div>
+
+        {/* 3. Results Panel */}
+        {analysis && (
+          <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', border: `2px solid ${analysis.color}`, borderRadius: '10px', background: '#161616' }}>
+            <h2 style={{ color: analysis.color }}>{analysis.status}</h2>
+            <p><strong>ANALYSIS:</strong> {analysis.reason}</p>
+            <hr style={{ borderColor: '#333' }} />
+            <p><strong>TRANSFERRED TRAITS:</strong> {analysis.transfer}</p>
           </div>
         )}
+        
+        {!analysis && <p style={{ color: '#666' }}>Drag two genes from the left into the slots to begin analysis.</p>}
+        <button onClick={() => {setSlotA(null); setSlotB(null);}} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>Reset Lab</button>
       </div>
     </div>
   );
