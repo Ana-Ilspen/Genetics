@@ -7,7 +7,6 @@ const App = () => {
   const [inventory, setInventory] = useState([]);
   const [hybridName, setHybridName] = useState("");
 
-  // Initialize Database with 500 Genes including Humans
   useEffect(() => {
     const baseGenes = Array.from({ length: 500 }, (_, i) => {
       const prefixes = ["Neon", "Primal", "Void", "Solar", "Cryo", "Toxic", "Apex", "Shadow", "Alpha", "Nano"];
@@ -40,66 +39,47 @@ const App = () => {
   const getAnalysis = (g1, g2) => {
     if (!g1 || !g2) return null;
     const combo = [g1.type, g2.type].sort().join('+');
-    const isLethal = (combo.includes("Botanical") && !combo.includes("Botanical+Botanical")) || 
-                     (combo.includes("Human") && combo.includes("Botanical"));
+    
+    // Compatibility Logic
+    const isSame = g1.type === g2.type;
+    const isLethal = (combo.includes("Botanical") && !combo.includes("Botanical+Botanical")) || (combo.includes("Human") && combo.includes("Botanical"));
+    
+    let compatibility = isSame ? 99.9 : (isLethal ? 0.02 : 64.5);
+    let drift = isSame ? 0.01 : (isLethal ? 99.9 : 14.8);
 
-    const constituents = [`${g1.compound} (Base)`, `${g2.compound} (Stabilizer)`, `Distilled H2O`, `Enzyme Catalyst` ];
+    let report = "";
+    if (isSame) report = "Molecular structures aligned. Sequence utilizes identical protein folds, resulting in near-perfect integration.";
+    else if (isLethal) report = "CRITICAL FAILURE: Cellulose-based cell walls are inducing rapid apoptosis in soft-tissue membranes. Sequence non-viable.";
+    else report = "Hybridized sequence stable. Endothermic regulation maintains homeostasis despite taxonomic drift.";
 
     return {
-      status: isLethal ? (view === 'splicer' ? "LETHAL MUTATION" : "CORROSIVE REACTION") : "STABLE",
-      color: isLethal ? "#ff3333" : (view === 'splicer' ? "#00d4ff" : "#bb00ff"),
+      status: isLethal ? "LETHAL MUTATION" : "STABLE HYBRID",
+      color: isLethal ? "#ff3333" : "#00d4ff",
       canSave: !isLethal,
-      reason: isLethal ? "Cross-kingdom cellular rejection detected." : "Taxonomic alignment confirmed.",
+      comp: `${compatibility}%`,
+      drift: `${drift}%`,
+      report,
       shifts: [
         { label: "Dominant Feature", value: g1.feature, source: g1.name },
-        { label: "Recessive Trait", value: g2.trait, source: g2.name }
+        { label: "Systemic Trait", value: g2.trait, source: g2.name }
       ],
-      constituents
+      constituents: [`${g1.compound}`, `${g2.compound}`, `Saline Catalyst`]
     };
   };
 
   const analysis = getAnalysis(slotA, slotB);
 
-  const archiveResult = () => {
-    if (!hybridName) return alert("Label your creation.");
-    const newEntry = {
-      ...slotA,
-      id: `${view === 'splicer' ? 'HYB' : 'SRM'}-${Math.floor(Math.random() * 8999 + 1000)}`,
-      name: hybridName.toUpperCase(),
-      type: `${slotA.type}/${slotB.type}`,
-      isHybrid: true,
-      icon: view === 'splicer' ? "🧬" : "🧪",
-      reportData: analysis
-    };
-    setInventory([newEntry, ...inventory]);
-    setSlotA(null); setSlotB(null); setHybridName("");
-  };
-
-  const downloadReport = () => {
-    const hybrids = inventory.filter(g => g.isHybrid);
-    const text = hybrids.map(h => (
-      `REPORT: ${h.name} (${h.id})\n` +
-      `TYPE: ${h.type}\n` +
-      `DOMINANT: ${h.reportData.shifts[0].value} (Source: ${h.reportData.shifts[0].source})\n` +
-      `RECESSIVE: ${h.reportData.shifts[1].value} (Source: ${h.reportData.shifts[1].source})\n` +
-      `COMPOSITION: ${h.reportData.constituents.join(', ')}\n` +
-      `------------------------------------------`
-    )).join('\n\n');
-    const blob = new Blob([text], {type: 'text/plain'});
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = "LAB_ARCHIVE_DATA.txt";
-    link.click();
-  };
+  const resetSlots = () => { setSlotA(null); setSlotB(null); setHybridName(""); };
 
   return (
     <div style={{ display: 'flex', height: '100vh', backgroundColor: '#050505', color: '#ccc', fontFamily: 'monospace' }}>
       
       {/* SIDEBAR */}
       <div style={{ width: '320px', borderRight: '1px solid #222', overflowY: 'auto', padding: '15px', background: '#0a0a0a' }}>
-        <button onClick={downloadReport} style={{ width: '100%', padding: '10px', background: '#00d4ff', color: '#000', border: 'none', fontWeight: 'bold', marginBottom: '10px', cursor: 'pointer' }}>DOWNLOAD LOGS</button>
-        <button onClick={() => {setView(view === 'splicer' ? 'serum' : 'splicer'); setSlotA(null); setSlotB(null);}} style={{ width: '100%', padding: '10px', background: '#222', color: '#fff', border: '1px solid #444', cursor: 'pointer', marginBottom: '20px' }}>
-            SWITCH TO {view.toUpperCase() === 'SPLICER' ? 'SERUM DEPT' : 'SPLICING DEPT'}
+        <h3 style={{ color: '#00d4ff', fontSize: '11px' }}>// ARCHIVE_CONTROLS</h3>
+        <button onClick={() => {}} style={{ width: '100%', padding: '10px', background: '#222', color: '#00d4ff', border: '1px solid #333', cursor: 'not-allowed', marginBottom: '10px' }}>LOG_EXPORT_V4</button>
+        <button onClick={() => {setView(view === 'splicer' ? 'serum' : 'splicer'); resetSlots();}} style={{ width: '100%', padding: '10px', background: '#00d4ff', color: '#000', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '20px' }}>
+            SWITCH TO {view.toUpperCase() === 'SPLICER' ? 'SERUM LAB' : 'SPLICING DEPT'}
         </button>
         {inventory.map(g => (
           <div key={g.id} draggable onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(g))} style={{ padding: '8px', margin: '4px 0', background: '#111', borderLeft: `3px solid ${g.color}`, cursor: 'grab', fontSize: '11px' }}>
@@ -110,7 +90,7 @@ const App = () => {
 
       {/* WORKSPACE */}
       <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ color: '#fff', letterSpacing: '4px' }}>{view === 'splicer' ? '🧬 GENOMIC_SPLICER' : '🧪 SERUM_SYNTHESIZER'}</h1>
+        <h1 style={{ color: '#fff' }}>{view === 'splicer' ? '🧬 GENOMIC_SPLICER' : '🧪 SERUM_SYNTHESIZER'}</h1>
         
         <div style={{ display: 'flex', gap: '40px', margin: '30px 0' }}>
           {[slotA, slotB].map((slot, i) => (
@@ -118,38 +98,51 @@ const App = () => {
               style={view === 'splicer' ? { width: '180px', height: '220px', border: '2px solid #333', background: '#0e0e0e', textAlign: 'center', padding: '15px' } : { width: '110px', height: '190px', border: '2px solid #555', borderRadius: '5px 5px 40px 40px', background: '#000', overflow: 'hidden', position: 'relative' }}>
               {view === 'serum' && slot && <div style={{ position: 'absolute', bottom: 0, width: '100%', height: '70%', background: slot.color, opacity: 0.5 }} />}
               <div style={{ position: 'relative', zIndex: 2, marginTop: view === 'serum' ? '40px' : '0' }}>
-                {slot ? <> <div style={{ fontSize: '30px' }}>{slot.icon}</div> <p style={{fontSize: '12px'}}>{slot.name}</p> </> : <p style={{marginTop: '40%', color: '#444'}}>EMPTY</p>}
+                {slot ? <> <div style={{ fontSize: '30px' }}>{slot.icon}</div> <p style={{fontSize: '11px'}}>{slot.name}</p> </> : <p style={{marginTop: '40%', color: '#444'}}>UPLOAD_DNA</p>}
               </div>
             </div>
           ))}
         </div>
 
         {analysis && (
-          <div style={{ width: '100%', maxWidth: '700px', padding: '25px', border: `1px solid ${analysis.color}`, background: '#0d0d0f' }}>
-            <h3 style={{ color: analysis.color, margin: '0 0 15px 0' }}>STATUS: {analysis.status}</h3>
+          <div style={{ width: '100%', maxWidth: '750px', padding: '25px', border: `1px solid ${analysis.color}`, background: '#0d0d0f' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 style={{ color: analysis.color, margin: 0 }}>STATUS: {analysis.status}</h3>
+                <button onClick={resetSlots} style={{ background: 'none', border: '1px solid #444', color: '#888', padding: '5px 10px', cursor: 'pointer', fontSize: '10px' }}>RESET_SEQUENCE</button>
+            </div>
             
-            <div style={{ background: '#000', padding: '15px', marginBottom: '15px', border: '1px solid #222' }}>
-              <p style={{ color: '#00d4ff', fontSize: '11px', margin: '0 0 10px 0' }}>// INHERITANCE_DATA</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', margin: '20px 0' }}>
+                <div style={{ background: '#000', padding: '10px', border: '1px solid #222' }}>
+                    <p style={{ fontSize: '9px', color: '#555' }}>COMPATIBILITY</p>
+                    <p style={{ color: '#00ff88', fontSize: '14px' }}>{analysis.comp}</p>
+                </div>
+                <div style={{ background: '#000', padding: '10px', border: '1px solid #222' }}>
+                    <p style={{ fontSize: '9px', color: '#555' }}>CELLULAR_DRIFT</p>
+                    <p style={{ color: '#ffcc00', fontSize: '14px' }}>{analysis.drift}</p>
+                </div>
+                <div style={{ background: '#000', padding: '10px', border: '1px solid #222' }}>
+                    <p style={{ fontSize: '9px', color: '#555' }}>VIABILITY</p>
+                    <p style={{ color: analysis.canSave ? '#00d4ff' : '#f00', fontSize: '14px' }}>{analysis.canSave ? 'HIGH' : 'ZERO'}</p>
+                </div>
+            </div>
+
+            <p style={{ fontSize: '13px', lineHeight: '1.4', marginBottom: '15px' }}><strong>BIO_REPORT:</strong> {analysis.report}</p>
+
+            <div style={{ background: '#000', padding: '15px', border: '1px solid #222' }}>
+              <p style={{ color: '#00d4ff', fontSize: '11px', margin: '0 0 10px 0' }}>// PHENOTYPE_INHERITANCE</p>
               {analysis.shifts.map((s, idx) => (
-                <p key={idx} style={{ fontSize: '13px', margin: '5px 0' }}>
-                  <span style={{ color: '#888' }}>{s.label}:</span> {s.value} <span style={{ color: '#555' }}>[Source: {s.source}]</span>
+                <p key={idx} style={{ fontSize: '12px', margin: '5px 0' }}>
+                  <span style={{ color: '#888' }}>{s.label}:</span> {s.value} <span style={{ color: '#555', fontSize: '10px' }}>[Drawn from: {s.source}]</span>
                 </p>
               ))}
             </div>
 
-            {view === 'serum' && analysis.canSave && (
-              <div style={{ marginBottom: '15px' }}>
-                <p style={{ color: '#888', fontSize: '11px' }}>CONSTITUENTS:</p>
-                <p style={{ fontSize: '12px', color: '#bb00ff' }}>{analysis.constituents.join(' + ')}</p>
-              </div>
-            )}
-
             {analysis.canSave ? (
-              <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-                <input placeholder="LABEL SEQUENCE..." value={hybridName} onChange={(e) => setHybridName(e.target.value)} style={{ background: '#000', color: '#00ff88', border: '1px solid #333', padding: '10px', flex: 1 }} />
-                <button onClick={archiveResult} style={{ background: analysis.color, color: '#000', border: 'none', padding: '10px 20px', fontWeight: 'bold', cursor: 'pointer' }}>ARCHIVE</button>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <input placeholder="NOMENCLATURE..." value={hybridName} onChange={(e) => setHybridName(e.target.value)} style={{ background: '#000', color: '#fff', border: '1px solid #444', padding: '10px', flex: 1 }} />
+                <button style={{ background: analysis.color, color: '#000', border: 'none', padding: '10px 20px', fontWeight: 'bold', cursor: 'pointer' }}>ARCHIVE_DATA</button>
               </div>
-            ) : <button onClick={() => {setSlotA(null); setSlotB(null);}} style={{ width: '100%', padding: '12px', background: '#ff3333', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}>PURGE VOLATILE SAMPLES</button>}
+            ) : <button onClick={resetSlots} style={{ width: '100%', padding: '12px', background: '#ff3333', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold', marginTop: '15px' }}>PURGE_FAILED_SAMPLES</button>}
           </div>
         )}
       </div>
