@@ -77,13 +77,10 @@ const App = () => {
     const stability = Math.max(5, (baseStability - (phDiff * 15) - (toxSum * 0.1))).toFixed(0);
     const isLethal = stability < 35 || toxSum > 160;
 
-    if (isLethal) return { isLethal: true, color: "#FF6666", reason: `pH variance (${phDiff}) or toxicity (${toxSum}) exceeds viable cellular limits.` };
+    if (isLethal) return { isLethal: true, color: "#FF6666", reason: `Biological incompatibility: Cellular strand rejection due to high environmental variance.` };
 
     let serum = null;
     if (!isBothHuman) {
-      const animalSource = !isHumanA ? g1 : g2;
-      const secondSource = !isHumanB ? g2 : g1;
-      
       serum = {
         title: isHumanA || isHumanB ? "ANIMAL ENHANCEMENT SERUM" : "HYBRID CHIMERA SERUM",
         physical: `Manifests [${g1.feature}] and [${g2.feature}] in host tissue.`,
@@ -135,86 +132,87 @@ ${res.serum ? `SERUM CONSTITUENTS:
     <div onMouseMove={(e) => setMousePos({ x: e.clientX + 20, y: e.clientY + 20 })} 
          style={{ display: 'flex', height: '100vh', backgroundColor: '#000', color: '#EEE', fontFamily: 'monospace', overflow: 'hidden' }}>
       
-      <div style={{ width: '350px', borderRight: '1px solid #222', display: 'flex', flexDirection: 'column', background: '#080808' }}>
-        <div style={{ padding: '20px' }}>
+      {/* Sidebar: Increased Width */}
+      <div style={{ width: '400px', borderRight: '1px solid #222', display: 'flex', flexDirection: 'column', background: '#080808' }}>
+        <div style={{ padding: '25px' }}>
           <button onClick={() => setView(view === 'splicer' ? 'serum' : 'splicer')} 
-                  style={{ width: '100%', padding: '12px', background: view === 'serum' ? '#EBBBFF' : '#99EBFF', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '10px' }}>
+                  style={{ width: '100%', padding: '16px', background: view === 'serum' ? '#EBBBFF' : '#99EBFF', border: 'none', fontWeight: 'bold', cursor: 'pointer', marginBottom: '15px', fontSize: '14px' }}>
             {view === 'splicer' ? '🧪 LAB VIEW' : '🧬 SPLICER VIEW'}
           </button>
           <input type="text" placeholder="FILTER GENOMES..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} 
-                 style={{ width: '100%', padding: '10px', background: '#000', border: '1px solid #333', color: '#FFF' }} />
+                 style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #333', color: '#FFF' }} />
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 25px' }}>
           {inventory.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase())).map(g => (
             <div key={g.id} onMouseEnter={() => setHoveredGene(g)} onMouseLeave={() => setHoveredGene(null)} draggable onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(g))} 
-                 style={{ padding: '10px', margin: '5px 0', background: '#111', borderLeft: `4px solid ${g.color}`, cursor: 'grab', fontSize: '12px' }}>
+                 style={{ padding: '14px', margin: '8px 0', background: '#111', borderLeft: `5px solid ${g.color}`, cursor: 'grab', fontSize: '13px' }}>
               {g.icon} {g.name}
             </div>
           ))}
         </div>
       </div>
 
-      <div style={{ flex: 1, padding: '40px', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h1 style={{ letterSpacing: '4px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>{view === 'splicer' ? 'GENETIC SPLICER' : 'SERUM DISTILLERY'}</h1>
+      {/* Main Workspace: Increased Padding/Scale */}
+      <div style={{ flex: 1, padding: '60px', overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <h1 style={{ letterSpacing: '6px', borderBottom: '2px solid #333', paddingBottom: '15px', fontSize: '32px' }}>{view === 'splicer' ? 'GENETIC SPLICER' : 'SERUM DISTILLERY'}</h1>
         
-        <div style={{ display: 'flex', gap: '30px', margin: '40px 0' }}>
+        <div style={{ display: 'flex', gap: '50px', margin: '60px 0' }}>
           {[slotA, slotB].map((slot, i) => (
             <div key={i} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { const d = JSON.parse(e.dataTransfer.getData("gene")); i === 0 ? setSlotA(d) : setSlotB(d); }}
-              style={{ width: '180px', height: '220px', border: '1px solid #333', background: '#050505', textAlign: 'center', padding: '15px', borderRadius: '4px' }}>
+              style={{ width: '240px', height: '300px', border: '1px solid #333', background: '#050505', textAlign: 'center', padding: '25px', borderRadius: '4px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               {slot ? (
                 <>
-                  <div style={{ fontSize: '50px' }}>{slot.icon}</div>
-                  <b style={{color: slot.color}}>{slot.name}</b>
+                  <div style={{ fontSize: '70px' }}>{slot.icon}</div>
+                  <b style={{color: slot.color, fontSize: '18px'}}>{slot.name}</b>
                   {slot.type === "Human" && (
-                    <div style={{marginTop: '15px'}}>
-                      <label style={{fontSize: '10px', display: 'block'}}>SUBJECT AGE</label>
+                    <div style={{marginTop: '20px'}}>
+                      <label style={{fontSize: '11px', display: 'block', color: '#888'}}>SUBJECT AGE</label>
                       <input type="number" value={manualAge} onChange={(e) => setManualAge(e.target.value)} 
-                             style={{width: '60px', background: '#000', border: '1px solid #444', color: '#0F0', textAlign: 'center'}} />
+                             style={{width: '70px', background: '#000', border: '1px solid #444', color: '#0F0', textAlign: 'center', fontSize: '16px'}} />
                     </div>
                   )}
                 </>
-              ) : <p style={{color: '#444', marginTop: '80px'}}>EMPTY_SLOT</p>}
+              ) : <p style={{color: '#444', fontSize: '14px'}}>EMPTY_SLOT</p>}
             </div>
           ))}
         </div>
 
         {res && (
-          <div style={{ width: '100%', maxWidth: '800px', padding: '25px', border: `1px solid ${res.color}`, background: '#080808' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <h2 style={{ color: res.color }}>{res.isLethal ? 'NON-VIABLE COMBINATION' : `STABILITY: ${res.stability}%`}</h2>
-              <button onClick={() => {setSlotA(null); setSlotB(null);}} style={{ background: '#222', color: '#FFF', border: 'none', padding: '5px 15px', cursor: 'pointer' }}>RESET</button>
+          <div style={{ width: '100%', maxWidth: '950px', padding: '40px', border: `1px solid ${res.color}`, background: '#080808' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+              <h2 style={{ color: res.color, fontSize: '24px', margin: 0 }}>{res.isLethal ? 'NON-VIABLE COMBINATION' : `STABILITY: ${res.stability}%`}</h2>
+              <button onClick={() => {setSlotA(null); setSlotB(null);}} style={{ background: '#222', color: '#FFF', border: 'none', padding: '10px 25px', cursor: 'pointer', fontSize: '14px' }}>RESET</button>
             </div>
 
-            {res.isLethal ? <p style={{color: '#FF6666'}}>{res.reason}</p> : (
+            {res.isLethal ? <p style={{color: '#FF6666', fontSize: '18px'}}>{res.reason}</p> : (
               <div>
                 {view === 'splicer' ? (
-                  <div style={{fontSize: '14px'}}>
+                  <div style={{fontSize: '18px', lineHeight: '1.6'}}>
                     <p><b>TRANSFORMATION:</b> {res.report.impact}</p>
-                    <p><b>LINEAGE:</b> {slotA.name} / {slotB.name} (Age: {manualAge})</p>
-                    <p><b>pH BALANCE:</b> {res.ph} | <b>TOXICITY:</b> {res.toxicity}</p>
+                    <p><b>LINEAGE:</b> {slotA.name} [X] {slotB.name} (Subject Age: {manualAge})</p>
                   </div>
                 ) : (
-                  <div style={{background: '#000', padding: '15px', border: '1px solid #222'}}>
+                  <div style={{background: '#000', padding: '25px', border: '1px solid #222'}}>
                     {res.serum ? (
                       <>
-                        <h4 style={{margin: '0 0 10px 0', color: '#EBBBFF'}}>{res.serum.title}</h4>
-                        <p style={{fontSize: '13px'}}><b>PHYSICAL:</b> {res.serum.physical}</p>
-                        <p style={{fontSize: '13px'}}><b>NEURAL:</b> {res.serum.neural}</p>
-                        <p style={{fontSize: '11px', color: '#888'}}><b>SYNTHESIS:</b> {res.serum.steps.join(' -> ')}</p>
+                        <h4 style={{margin: '0 0 15px 0', color: '#EBBBFF', fontSize: '20px'}}>{res.serum.title}</h4>
+                        <p style={{fontSize: '16px'}}><b>PHYSICAL:</b> {res.serum.physical}</p>
+                        <p style={{fontSize: '16px'}}><b>NEURAL:</b> {res.serum.neural}</p>
+                        <p style={{fontSize: '13px', color: '#888', marginTop: '20px'}}><b>SYNTHESIS:</b> {res.serum.steps.join(' -> ')}</p>
                       </>
-                    ) : <p>Neutral match. No serum required for enhancement.</p>}
+                    ) : <p style={{fontSize: '16px'}}>Neutral match. No serum required for enhancement.</p>}
                   </div>
                 )}
                 
-                <div style={{ display: 'flex', gap: '10px', marginTop: '25px' }}>
+                <div style={{ display: 'flex', gap: '15px', marginTop: '40px' }}>
                   <input placeholder="SPECIMEN_ID..." value={hybridName} onChange={(e) => setHybridName(e.target.value)} 
-                         style={{ background: '#000', color: '#FFF', border: '1px solid #333', padding: '10px', flex: 1 }} />
+                         style={{ background: '#000', color: '#FFF', border: '1px solid #333', padding: '15px', flex: 1, fontSize: '16px' }} />
                   <button onClick={() => {
                     const newEntry = { ...slotA, id: Date.now(), name: hybridName.toUpperCase(), isHybrid: true, color: res.color };
                     setInventory([newEntry, ...inventory]);
                     setSlotA(null); setSlotB(null); setHybridName("");
-                  }} style={{ background: res.color, color: '#000', border: 'none', padding: '0 20px', fontWeight: 'bold', cursor: 'pointer' }}>SAVE</button>
-                  <button onClick={handleDownload} style={{ background: '#333', color: '#FFF', border: 'none', padding: '0 15px', cursor: 'pointer' }}>DOC</button>
+                  }} style={{ background: res.color, color: '#000', border: 'none', padding: '0 35px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>SAVE</button>
+                  <button onClick={handleDownload} style={{ background: '#333', color: '#FFF', border: 'none', padding: '0 25px', cursor: 'pointer', fontSize: '14px' }}>DOC</button>
                 </div>
               </div>
             )}
@@ -222,11 +220,12 @@ ${res.serum ? `SERUM CONSTITUENTS:
         )}
       </div>
 
+      {/* Tooltip: No pH/TOX, only Bio-Characteristics */}
       {hoveredGene && (
-        <div style={{ position: 'fixed', left: mousePos.x, top: mousePos.y, zIndex: 100, background: '#111', border: `1px solid ${hoveredGene.color}`, padding: '10px', fontSize: '11px', pointerEvents: 'none' }}>
-          <b style={{ color: hoveredGene.color }}>{hoveredGene.name}</b>
-          <div>PH: {hoveredGene.basePh} | TOX: {hoveredGene.baseTox}</div>
-          <div style={{color: '#888'}}>F: {hoveredGene.feature}</div>
+        <div style={{ position: 'fixed', left: mousePos.x, top: mousePos.y, zIndex: 100, background: '#111', border: `2px solid ${hoveredGene.color}`, padding: '15px', fontSize: '13px', pointerEvents: 'none', maxWidth: '250px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }}>
+          <b style={{ color: hoveredGene.color, fontSize: '15px', display: 'block', marginBottom: '8px' }}>{hoveredGene.name}</b>
+          <div style={{marginBottom: '5px'}}><b>ANATOMICAL:</b> {hoveredGene.feature}</div>
+          <div style={{color: '#AAA'}}><b>BEHAVIORAL:</b> {hoveredGene.trait}</div>
         </div>
       )}
     </div>
