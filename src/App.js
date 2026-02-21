@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-// --- PHASE B: CRYPTO & LOCAL SHIELD ---
+// --- SHA-256 ENCRYPTION CORE ---
 const hashKey = async (key) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(key);
@@ -10,47 +9,63 @@ const hashKey = async (key) => {
 };
 
 const App = () => {
-  const [view, setView] = useState('analytics');
-  const [passkey, setPasskey] = useState("");
+  // Security & System State
   const [unlocked, setUnlocked] = useState(false);
+  const [passkey, setPasskey] = useState("");
   const [storedHash, setStoredHash] = useState(localStorage.getItem('vault_hash'));
   const [isSettingUp, setIsSettingUp] = useState(!localStorage.getItem('vault_hash'));
-  const [inhibitionLevel, setInhibitionLevel] = useState(0.85);
+  const [systemTime, setSystemTime] = useState(new Date().toLocaleTimeString());
 
-  // --- AUTO-LOCK LOGIC (THE GHOST SHIELD) ---
-  const lockVault = useCallback(() => {
-    setUnlocked(false);
-    setView('analytics');
-    setPasskey("");
-    console.log("VAULT_SECURED: INACTIVITY_TIMEOUT");
+  // Lab State
+  const [view, setView] = useState('splicer'); 
+  const [slotA, setSlotA] = useState(null);
+  const [slotB, setSlotB] = useState(null);
+  const [ageA, setAgeA] = useState(25);
+  const [ageB, setAgeB] = useState(25);
+  const [inventory, setInventory] = useState([]);
+  const [hybridName, setHybridName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [hoveredGene, setHoveredGene] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  // Real-time Clock
+  useEffect(() => {
+    const timer = setInterval(() => setSystemTime(new Date().toLocaleTimeString()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
+  // --- GENOME DATABASE GENERATION ---
   useEffect(() => {
-    let timeout;
-    const resetTimer = () => {
-      if (timeout) clearTimeout(timeout);
-      // Set to 300,000ms (5 minutes) for standard hygiene
-      timeout = setTimeout(lockVault, 300000); 
+    const regions = ["Arctic", "Tundra", "Desert", "Amazon", "Mountain", "Volcanic", "Subterranean", "Savanna", "Highland"];
+    const speciesData = {
+      Mammalian: { icons: ["🐺", "🐅", "🐻"], features: ["Insulated Fur", "Thermal Claws", "Muscle Density"], manifest: ["growth of coarse fur", "keratinized claws", "hyper-densification of muscle"], traits: ["Night-Vision", "Stamina"] },
+      Avian: { icons: ["🦅", "🦉"], features: ["Aero-Keel", "Hollow Bones"], manifest: ["sternum extension", "bone pneumatization"], traits: ["Dive-Speed", "Telescopic Sight"] },
+      Aquatic: { icons: ["🦈", "🐙"], features: ["Electro-Sense", "Gills"], manifest: ["Ampullae formation", "cervical slit formation"], traits: ["Blood-Scent", "Mimicry"] },
+      Arachnid: { icons: ["🕷️", "🦂"], features: ["Exoskeleton", "Tail Stinger"], manifest: ["chitinous plating", "caudal stinger extension"], traits: ["Wall-Climbing", "Paralytic Strike"] },
+      Human: { icons: ["👤"], features: ["Frontal Lobe", "Opposable Thumbs"], manifest: ["neocortical expansion", "refined digital dexterity"], traits: ["Logic", "Adaptability"] }
     };
-
-    if (unlocked) {
-      window.addEventListener('mousemove', resetTimer);
-      window.addEventListener('keypress', resetTimer);
-      resetTimer(); // Start timer on unlock
+    const tempInv = [];
+    let count = 0;
+    const types = Object.keys(speciesData);
+    for (let i = 0; i < 50; i++) {
+      types.forEach(type => {
+        const data = speciesData[type];
+        const featIdx = count % data.features.length;
+        tempInv.push({
+          id: `DB-${count}`,
+          name: type === "Human" ? `${i % 2 === 0 ? "Male" : "Female"} Human` : `${regions[i % regions.length]} ${type}`,
+          type, feature: data.features[featIdx], manifestation: data.manifest[featIdx],
+          trait: data.traits[count % data.traits.length],
+          compound: `${type.substring(0,3).toUpperCase()}-${count}`,
+          basePh: (7.2 + (Math.random() * 0.4 - 0.2)).toFixed(2),
+          color: { Mammalian: "#FFD699", Avian: "#99EBFF", Aquatic: "#99B2FF", Human: "#FFFFFF", Arachnid: "#E066FF" }[type],
+          icon: data.icons[count % data.icons.length]
+        });
+        count++;
+      });
     }
-
-    return () => {
-      window.removeEventListener('mousemove', resetTimer);
-      window.removeEventListener('keypress', resetTimer);
-      if (timeout) clearTimeout(timeout);
-    };
-  }, [unlocked, lockVault]);
-
-  // --- DATA GENERATION ---
-  const chartData = Array.from({ length: 20 }, (_, i) => ({
-    ms: i * 5,
-    firing_rate: Math.max(0, Math.sin(i * 0.5) * 12 * (1 - inhibitionLevel) + (Math.random() * 2))
-  }));
+    setInventory(tempInv);
+  }, []);
 
   const handleAuth = async () => {
     const enteredHash = await hashKey(passkey);
@@ -58,81 +73,119 @@ const App = () => {
       localStorage.setItem('vault_hash', enteredHash);
       setStoredHash(enteredHash);
       setIsSettingUp(false);
+    } else if (enteredHash === storedHash) {
+      setUnlocked(true);
     } else {
-      if (enteredHash === storedHash) {
-        setUnlocked(true);
-        setView('splicer');
-      } else {
-        alert("AUTH_FAILED");
-      }
+      alert("AUTH_FAILED: ACCESS DENIED");
     }
     setPasskey("");
   };
 
-  return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F3F4F6', color: '#111827', fontFamily: 'system-ui, sans-serif' }}>
-      {/* THE MASK (NAV) */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', padding: '1.5rem 2rem', background: '#FFF', borderBottom: '1px solid #E5E7EB' }}>
-        <span style={{ fontWeight: 800, color: '#2563EB', letterSpacing: '1px' }}>NEURAL_GATEWAY_v2</span>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <button onClick={() => setView('analytics')} style={{ cursor: 'pointer', background: 'none', border: 'none', fontSize: '14px' }}>DASHBOARD</button>
-          {!unlocked && (
-            <div style={{ display: 'flex', background: '#F9FAFB', border: '1px solid #D1D5DB', borderRadius: '6px', padding: '2px 8px' }}>
-              <input 
-                type="password" 
-                placeholder={isSettingUp ? "INIT_KEY" : "ADMIN"} 
-                value={passkey} 
-                onChange={(e) => setPasskey(e.target.value)} 
-                onKeyDown={(e) => e.key === 'Enter' && handleAuth()}
-                style={{ border: 'none', background: 'none', padding: '4px', outline: 'none', width: '100px', fontSize: '12px' }}
-              />
-              <button onClick={handleAuth} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', color: '#6B7280' }}>➜</button>
-            </div>
-          )}
-          {unlocked && <button onClick={lockVault} style={{ background: '#EF4444', color: '#FFF', border: 'none', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>LOCK</button>}
+  const getAnalysis = (g1, g2) => {
+    if (!g1 || !g2) return null;
+    const stability = Math.max(5, (g1.type === g2.type ? 90 : 65) - (Math.abs(g1.basePh - g2.basePh) * 50)).toFixed(0);
+    return {
+      isLethal: stability < 40, stability, color: view === 'splicer' ? "#99EBFF" : "#EBBBFF",
+      physical: `Immediate ${g1.manifestation} and ${g2.manifestation}.`,
+      neural: `Instincts: ${g1.trait}. Behavioral loops: ${g2.trait}.`,
+      protocol: [
+        `1. Bypass MHC T-cell recognition via MHC-Suppressor complex.`,
+        `2. Maintain pH ${((parseFloat(g1.basePh)+parseFloat(g2.basePh))/2).toFixed(2)} stability.`,
+        `3. Continuous 80,000 kcal/hr ATP drip for rapid cellular division.`,
+        `4. Mitigate 108°F metabolic thermal spike via cryogenic immersion.`
+      ]
+    };
+  };
+
+  const res = getAnalysis(slotA, slotB);
+
+  const handleDownload = () => {
+    const content = `GENETIC RECOMBINATION REPORT\nDATE: ${new Date().toLocaleDateString()}\nSTABILITY: ${res.stability}%\nPHYSICAL: ${res.physical}\nNEURAL: ${res.neural}\n\nPROTOCOL:\n${res.protocol.join('\n')}`;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([content], {type: 'text/plain'}));
+    link.download = `REPORT_${hybridName.toUpperCase() || 'SUBJECT'}.txt`;
+    link.click();
+  };
+
+  if (!unlocked) {
+    return (
+      <div style={{ height: '100vh', backgroundColor: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'monospace' }}>
+        <div style={{ width: '400px', border: '1px solid #333', padding: '40px', textAlign: 'center' }}>
+          <h2 style={{ color: '#2563EB', letterSpacing: '4px' }}>VAULT_LOCKED</h2>
+          <p style={{ color: '#444', fontSize: '12px' }}>SYSTEM_TIME: {systemTime}</p>
+          <input type="password" placeholder={isSettingUp ? "CREATE_MASTER_KEY" : "ENTER_CREDENTIALS"} value={passkey} 
+                 onChange={(e) => setPasskey(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAuth()} 
+                 style={{ width: '100%', background: '#080808', color: '#FFF', border: '1px solid #444', padding: '15px', marginTop: '20px', textAlign: 'center' }} />
+          <button onClick={handleAuth} style={{ width: '100%', marginTop: '10px', padding: '10px', background: '#2563EB', border: 'none', color: '#FFF', fontWeight: 'bold', cursor: 'pointer' }}>AUTHENTICATE</button>
         </div>
+      </div>
+    );
+  }
+
+  return (
+    <div onMouseMove={(e) => setMousePos({ x: e.clientX + 15, y: e.clientY + 15 })} 
+         style={{ minHeight: '100vh', backgroundColor: '#000', color: '#EEE', fontFamily: 'monospace' }}>
+      
+      <nav style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 2rem', borderBottom: '1px solid #222', background: '#050505' }}>
+        <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
+          <span style={{ fontWeight: 800, color: '#2563EB' }}>GENOME_VAULT_v3</span>
+          <button onClick={() => setView('splicer')} style={{ color: view === 'splicer' ? '#99EBFF' : '#444', background: 'none', border: 'none', cursor: 'pointer' }}>🧬 SPLICER</button>
+          <button onClick={() => setView('serum')} style={{ color: view === 'serum' ? '#EBBBFF' : '#444', background: 'none', border: 'none', cursor: 'pointer' }}>🧪 SERUM_LAB</button>
+        </div>
+        <div style={{ color: '#444', fontSize: '12px' }}>{systemTime} | SAMPLES: {inventory.length}</div>
       </nav>
 
-      {/* VIEW: ANALYTICS (PUBLIC MASK) */}
-      {view === 'analytics' && (
-        <main style={{ maxWidth: '800px', margin: '3rem auto', padding: '2rem', background: '#FFF', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginBottom: '0.5rem' }}>Nociceptive Firing Analysis</h3>
-          <p style={{ color: '#6B7280', fontSize: '14px', marginBottom: '2rem' }}>Modeling SCN9A-targeted analgesic efficacy across peripheral pathways.</p>
-          <div style={{ height: '300px', width: '100%' }}>
-            <ResponsiveContainer>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
-                <XAxis hide />
-                <YAxis axisLine={false} tick={{fontSize: 12}} />
-                <Tooltip />
-                <Line type="monotone" dataKey="firing_rate" stroke="#2563EB" strokeWidth={3} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          <div style={{ marginTop: '2rem' }}>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#374151' }}>SIMULATION_INTENSITY: {(inhibitionLevel * 100).toFixed(0)}%</label>
-            <input type="range" min="0" max="1" step="0.01" value={inhibitionLevel} onChange={(e) => setInhibitionLevel(e.target.value)} style={{ width: '100%', accentColor: '#2563EB' }} />
-          </div>
-        </main>
-      )}
-
-      {/* VIEW: THE SECRET LAB */}
-      {view === 'splicer' && unlocked && (
-        <main style={{ maxWidth: '800px', margin: '3rem auto', background: '#0F172A', color: '#10B981', padding: '3rem', borderRadius: '12px', border: '1px solid #1E293B' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #1E293B', paddingBottom: '1rem' }}>
-            <h2 style={{ fontFamily: 'monospace', margin: 0 }}>LAB_ACCESS: GRANTED</h2>
-            <span style={{ fontSize: '12px', color: '#334155' }}>ENCRYPTION: SHA-256</span>
-          </div>
-          <div style={{ marginTop: '2rem', fontFamily: 'monospace', lineHeight: 1.6 }}>
-            <p style={{ color: '#6EE7B7' }}>// CURRENT_SPLICER_VERSION: 1.0.4</p>
-            <p>// DATASET: SCN9A_VARIANT_X6</p>
-            <p style={{ color: '#F59E0B' }}>[WARNING]: LOCAL_STORAGE_ONLY. RELOAD PURGES CACHE.</p>
-            <div style={{ marginTop: '2rem', padding: '1rem', background: '#020617', borderRadius: '4px' }}>
-               {/* This area is where your secret research strings go */}
-               $ ROOT_ACCESS_SEQUENCES_INIT...
+      <div style={{ display: 'flex', height: 'calc(100vh - 65px)' }}>
+        <div style={{ width: '350px', borderRight: '1px solid #222', padding: '20px', overflowY: 'auto' }}>
+          <input type="text" placeholder="FILTER_DB..." onChange={(e) => setSearchTerm(e.target.value)} 
+                 style={{ width: '100%', padding: '12px', background: '#0a0a0a', color: '#FFF', border: '1px solid #333', marginBottom: '20px' }} />
+          {inventory.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase())).map(g => (
+            <div key={g.id} draggable onDragStart={(e) => e.dataTransfer.setData("gene", JSON.stringify(g))} onMouseEnter={() => setHoveredGene(g)} onMouseLeave={() => setHoveredGene(null)}
+                 style={{ padding: '12px', margin: '8px 0', background: '#0a0a0a', borderLeft: `4px solid ${g.color}`, cursor: 'grab', fontSize: '13px' }}>
+              {g.icon} {g.name}
             </div>
+          ))}
+        </div>
+
+        <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', gap: '40px', marginBottom: '40px' }}>
+            {[ {s: slotA, set: setSlotA, age: ageA, setAge: setAgeA}, {s: slotB, set: setSlotB, age: ageB, setAge: setAgeB} ].map((item, i) => (
+              <div key={i} onDragOver={(e) => e.preventDefault()} onDrop={(e) => item.set(JSON.parse(e.dataTransfer.getData("gene")))}
+                   style={{ width: '220px', height: '280px', border: '1px solid #222', background: '#020202', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                {item.s ? (
+                  <>
+                    <div style={{fontSize: '60px'}}>{item.s.icon}</div>
+                    <b style={{color: item.s.color}}>{item.s.name}</b>
+                    {item.s.type === 'Human' && <input type="number" value={item.age} onChange={(e) => item.setAge(e.target.value)} style={{width: '45px', background: '#000', color: '#0F0', border: '1px solid #333', marginTop: '10px'}} />}
+                  </>
+                ) : <span style={{color: '#111'}}>EMPTY_SLOT</span>}
+              </div>
+            ))}
           </div>
-        </main>
+
+          {res && (
+            <div style={{ width: '100%', maxWidth: '800px', padding: '35px', border: `1px solid ${res.color}`, background: '#050505' }}>
+              <h2 style={{ color: res.color }}>{res.isLethal ? 'VIABILITY_FAILURE' : `STABILITY: ${res.stability}%`}</h2>
+              <div style={{fontSize: '15px', lineHeight: '1.6', margin: '25px 0'}}>
+                {view === 'splicer' ? <p><b>MANIFEST:</b> {res.physical}</p> : 
+                  res.protocol.map((s, i) => <p key={i} style={{fontSize: '12px', color: '#888'}}>{s}</p>)}
+              </div>
+              <div style={{ display: 'flex', gap: '15px' }}>
+                <input placeholder="SPECIMEN_ID" value={hybridName} onChange={(e) => setHybridName(e.target.value)} style={{ background: '#000', color: '#FFF', border: '1px solid #222', padding: '12px', flex: 1 }} />
+                <button onClick={() => { setInventory([{...slotA, id: Date.now(), name: hybridName.toUpperCase(), isHybrid: true, color: res.color, parents: [slotA.name, slotB.name], feature: res.physical, trait: res.neural}, ...inventory]); setSlotA(null); setSlotB(null); setHybridName(""); }} 
+                        style={{ background: res.color, color: '#000', border: 'none', padding: '0 30px', fontWeight: 'bold', cursor: 'pointer' }}>SAVE</button>
+                {view === 'serum' && <button onClick={handleDownload} style={{ background: '#222', color: '#FFF', border: 'none', padding: '0 20px', cursor: 'pointer' }}>DOC</button>}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {hoveredGene && (
+        <div style={{ position: 'fixed', left: mousePos.x, top: mousePos.y, background: '#0a0a0a', border: `1px solid ${hoveredGene.color}`, padding: '12px', zIndex: 1000, pointerEvents: 'none' }}>
+          <b style={{ color: hoveredGene.color }}>{hoveredGene.name}</b>
+          <p style={{fontSize: '11px', color: '#888'}}>{hoveredGene.feature}</p>
+        </div>
       )}
     </div>
   );
